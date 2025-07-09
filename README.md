@@ -62,8 +62,6 @@ To get a local copy up and running follow these simple steps.
     ```
     The application will be available at `http://localhost:5173/` (or another port as indicated by Vite).
 
-## Deployment
-
 
 
 
