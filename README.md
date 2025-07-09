@@ -1,69 +1,22 @@
-# React + TypeScript + Vite
+Project Description (English)
+This is a React application developed using class components, leveraging their full lifecycle methods and state management capabilities. The application interacts with the PokeAPI to fetch and display Pokémon data.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Key functionalities and technical aspects include:
 
-Currently, two official plugins are available:
+Sectional Layout: The application's interface is divided into two main sections. The top section features a search input and a "Search" button, while the bottom section is dedicated to displaying search results as a list of Pokémon cards.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Search Functionality: Users can search for Pokémon. By default, upon page load, it displays Pokémon from the first API page (or based on the last saved search term). Results update dynamically when a new query is entered and the "Search" button is clicked.
 
-## Expanding the ESLint configuration
+Search Term Persistence: The user's last search query is saved in Local Storage to ensure it's available upon subsequent application visits.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Loading Indicator: A loading spinner is displayed during API requests, providing visual feedback to the user about the data fetching process.
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+API Error Handling: The application is designed to gracefully handle unsuccessful API responses (4xx or 5xx status codes), displaying meaningful error messages to the user.
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+UI Error Handling with Error Boundaries: The entire application is wrapped in Error Boundaries to catch JavaScript errors occurring within the UI. In case of an error, a fallback UI is rendered, and error information is logged to the console. A dedicated button is provided to trigger an error for demonstration purposes.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+TypeScript: The entire project is written in TypeScript, ensuring strong typing, enhancing code readability, and aiding in error prevention during development.
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Husky: Husky is configured in the project to enforce pre-commit hooks. This means that code quality checks (such as ESLint) are automatically run before each commit, helping maintain a high standard of code quality and adherence to coding guidelines.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Conventional Commits: Commit messages adhere to the Conventional Commits specification, contributing to a clean and structured version history.
