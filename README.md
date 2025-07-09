@@ -1,17 +1,6 @@
 # Pokedex App
 
-![GitHub Pages Workflow Status](https://github.com/rubaka-pl/rss-school/actions/workflows/deploy.yml/badge.svg) ## Table of Contents
-
-* [About The Project](#about-the-project)
-* [Features](#features)
-* [Technologies Used](#technologies-used)
-* [Getting Started](#getting-started)
-    * [Prerequisites](#prerequisites)
-    * [Installation](#installation)
-* [Deployment](#deployment)
-* [Commit Guidelines](#commit-guidelines)
-* [License](#license)
-* [Contact](#contact)
+![image](https://github.com/user-attachments/assets/40620e59-062d-432b-a155-ee4ba4879f82)
 
 ## About The Project
 
