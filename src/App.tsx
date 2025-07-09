@@ -64,10 +64,39 @@ export default class App extends React.Component<object, AppState> {
     url: string
   ): Promise<Result> => {
     const res = await fetch(url);
-    if (!res.ok) throw new Error(`Failed to fetch ${name}`);
+    if (!res.ok) {
+      switch (res.status) {
+        case 404:
+          throw new Error(`Details for "${name}" not found (404).`);
+        case 401:
+          throw new Error(
+            `Unauthorized to access details for "${name}" (401).`
+          );
+        case 500:
+          throw new Error(`Server error getting details for "${name}" (500).`);
+        default:
+          throw new Error(
+            `Failed to fetch details for "${name}": ${res.status} ${res.statusText}`
+          );
+      }
+    }
     const data = await res.json();
 
     const speciesRes = await fetch(data.species.url);
+    if (!speciesRes.ok) {
+      switch (speciesRes.status) {
+        case 404:
+          throw new Error(`Species data for "${name}" not found (404).`);
+        case 401:
+          throw new Error(
+            `Unauthorized to access species data for "${name}" (401).`
+          );
+        default:
+          throw new Error(
+            `Failed to fetch species data for "${name}": ${speciesRes.status} ${speciesRes.statusText}`
+          );
+      }
+    }
     const speciesData = (await speciesRes.json()) as SpeciesData;
     const flavor = speciesData.flavor_text_entries.find(
       (e) => e.language.name === 'en'
@@ -99,7 +128,23 @@ export default class App extends React.Component<object, AppState> {
       const res = await fetch(
         `https://pokeapi.co/api/v2/pokemon?limit=${PAGE_SIZE}&offset=${offset}`
       );
-      if (!res.ok) throw new Error(`Page fetch failed: ${res.status}`);
+      if (!res.ok) {
+        // Детальная обработка ошибок для fetchPage
+        switch (res.status) {
+          case 401:
+            throw new Error(`Unauthorized to fetch page (401).`);
+          case 403:
+            throw new Error(`Forbidden to fetch page (403).`);
+          case 404: // Хотя для пагинации 404 маловероятен, но можно учесть
+            throw new Error(`Page not found (404).`);
+          case 500:
+            throw new Error(`Server error fetching page (500).`);
+          default:
+            throw new Error(
+              `Failed to load page: ${res.status} ${res.statusText}`
+            );
+        }
+      }
       const json = (await res.json()) as {
         count: number;
         results: { name: string; url: string }[];
@@ -134,7 +179,20 @@ export default class App extends React.Component<object, AppState> {
     }
     try {
       const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${query}`);
-      if (!res.ok) throw new Error(`Pokémon "${query}" not found`);
+      if (!res.ok) {
+        switch (res.status) {
+          case 404:
+            throw new Error(`Pokémon "${query}" not found (404).`);
+          case 401:
+            throw new Error(`Unauthorized to search for "${query}" (401).`);
+          case 500:
+            throw new Error(`Server error during search for "${query}" (500).`);
+          default:
+            throw new Error(
+              `Failed to search for "${query}": ${res.status} ${res.statusText}`
+            );
+        }
+      }
       const data = await res.json();
       const item = await this.fetchFullData(
         data.name,
