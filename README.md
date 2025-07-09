@@ -64,58 +64,7 @@ To get a local copy up and running follow these simple steps.
 
 ## Deployment
 
-The project is automatically deployed to GitHub Pages.
 
-1.  Ensure you have `gh-pages` installed:
-    ```bash
-    npm install --save-dev gh-pages
-    # or
-    yarn add --dev gh-pages
-    ```
-2.  Update your `package.json` with the `homepage` URL and deploy scripts:
-    ```json
-    {
-      // ...
-      "homepage": "[https://rubaka-pl.github.io/rss-school/](https://rubaka-pl.github.io/rss-school/)", // Your actual GitHub Pages URL
-      "scripts": {
-        "predeploy": "npm run build",
-        "deploy": "gh-pages -d dist",
-        // ...
-      },
-      // ...
-    }
-    ```
-3.  Deploy the application:
-    ```bash
-    npm run deploy
-    # or
-    yarn deploy
-    ```
-    The application will be accessible at: [https://rubaka-pl.github.io/rss-school/](https://rubaka-pl.github.io/rss-school/)
 
-## Commit Guidelines
 
-This project adheres to [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0-beta.2/) specification.
-Commit messages must follow the format: `<type>: <description>`.
 
-**Type MUST be lowercase.**
-
-Common types include:
-
-* `init`: Used to start the project/task (e.g., `init: start youtube-task`).
-* `feat`: New functionality implemented based on technical specifications (e.g., `feat: add basic page layout`).
-* `fix`: A bug fix in previously implemented functionality (e.g., `fix: implement correct loading data from youtube`).
-* `refactor`: Changes that do not add new functionality or alter behavior, such as code restructuring or formatting (e.g., `refactor: change structure of the project`).
-* `docs`: Changes related to project documentation or README (e.g., `docs: update readme with additional information`).
-* `chore`: Project setup, build process, or auxiliary tools changes.
-
-Husky is configured to enforce pre-commit checks, including linting, to maintain code quality before each commit.
-
-## License
-
-Distributed under the MIT License. See `LICENSE` for more information. (If you have a LICENSE file)
-
-## Contact
-
-Your GitHub Profile: [@rubaka-pl](https://github.com/rubaka-pl)
-Project Link: [https://github.com/rubaka-pl/rss-school](https://github.com/rubaka-pl/rss-school)
