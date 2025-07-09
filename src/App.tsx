@@ -1,8 +1,8 @@
 import React from 'react';
 import { TopSection } from './components/TopSection';
 import { BottomSection } from './components/BottomSection';
-import { ErrorBoundary } from './components/ErrorBoundary'; // Ваша ErrorBoundary
-import { BuggyComponent } from './components/BuggyComponent'; // Ваш BuggyComponent
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { BuggyComponent } from './components/BuggyComponent';
 import './App.css';
 // =============================================================
 // I.
@@ -76,7 +76,7 @@ export default class App extends React.Component<object, AppState> {
       ? flavor.flavor_text.replace(/\n|\f/g, ' ')
       : 'No description';
 
-    await new Promise((resolve) => setTimeout(resolve, 1500)); // Задержка 1.5 секунды
+    await new Promise((resolve) => setTimeout(resolve, 1500));
 
     return {
       name,

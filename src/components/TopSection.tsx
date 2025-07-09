@@ -25,7 +25,6 @@ export class TopSection extends React.Component<
   state: TopSectionState = {
     suggestions: [],
   };
-  // donload pokemons names for suggestions list
   async componentDidMount() {
     try {
       const res = await fetch('https://pokeapi.co/api/v2/pokemon?limit=100000');
