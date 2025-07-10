@@ -1,7 +1,7 @@
 # Pokedex App
 
 ![image](https://github.com/user-attachments/assets/40620e59-062d-432b-a155-ee4ba4879f82)
-
+# DEMO [preview](https://rubaka-pl.github.io/rss-school/) 
 ## About The Project
 
 This is a React application built with class components that interacts with the PokeAPI to fetch and display Pokémon data. The project emphasizes clean code, strong typing, and robust error handling to provide a smooth user experience.
