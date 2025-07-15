@@ -3,12 +3,12 @@ import { createRoot } from 'react-dom/client';
 import './index.css';
 import App from './App';
 
-const rootElement = document.getElementById('root');
-if (!rootElement) {
+const rootEl = document.getElementById('root');
+if (!rootEl) {
   throw new Error('Root element not found');
 }
 
-createRoot(rootElement).render(
+createRoot(rootEl).render(
   <StrictMode>
     <App />
   </StrictMode>

@@ -1,7 +1,8 @@
 # Pokedex App
 
-![image](https://github.com/user-attachments/assets/40620e59-062d-432b-a155-ee4ba4879f82)
-# DEMO [preview](https://rubaka-pl.github.io/rss-school/) 
+<img width="1899" height="918" alt="image" src="https://github.com/user-attachments/assets/67dabfa5-427d-44b7-adff-b5c5e0062928" />
+
+# DEMO [preview](https://rubaka-pl.github.io/REACT2025Q3/)
 ## About The Project
 
 This is a React application built with class components that interacts with the PokeAPI to fetch and display Pokémon data. The project emphasizes clean code, strong typing, and robust error handling to provide a smooth user experience.
@@ -41,12 +42,12 @@ To get a local copy up and running follow these simple steps.
 
 1.  Clone the repo
     ```bash
-    git clone [https://github.com/rubaka-pl/rss-school.git](https://github.com/rubaka-pl/rss-school.git)
+    git clone https://github.com/rubaka-pl/REACT2025Q3.git
     ```
-    (Replace `rubaka-pl` with your GitHub username and `rss-school` with your repository name if it's different)
+    (Replace `rubaka-pl` with your GitHub username and `REACT2025Q3` with your repository name if it's different)
 2.  Navigate into the project directory
     ```bash
-    cd rss-school
+    cd REACT2025Q3
     ```
 3.  Install NPM packages
     ```bash
