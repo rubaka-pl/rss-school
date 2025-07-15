@@ -12,10 +12,8 @@ This is a React application built with class components that interacts with the 
 * **Search Functionality**: Users can search for Pokémon by name. The application displays Pokémon from the first API page by default or based on the last saved search term.
 * **Persistent Search**: The last search query is saved in [Local Storage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage) to persist across sessions.
 * **Loading Indicators**: A visual spinner is displayed during API requests to provide feedback to the user.
-* **API Error Handling**: The application gracefully handles unsuccessful API responses (e.g., 404, 500 errors) and displays informative error messages.
 * **Error Boundaries**: Implemented to catch JavaScript errors within the UI, providing a fallback interface and logging error details to the console. A dedicated button is available to trigger an error for demonstration purposes.
-* **Pagination**: (If applicable, based on previous discussions about fetching pages, add this here. If you removed it or it's not fully functional, omit it.)
-* **Class Components**: The application is structured using React class components, demonstrating proficiency with component lifecycle methods and state management.
+* **Class Components**: The application is structured using React class components
 
 ## Technologies Used
 
