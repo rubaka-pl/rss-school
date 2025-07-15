@@ -1,0 +1,57 @@
+/* pagination */
+
+.controls {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: center;
+  margin: 2rem 0;
+  background: radial-gradient(circle at center, #f2f2f2 0%, #e0e0e0 100%);
+  padding: 1rem;
+  border: 4px solid #333;
+  border-radius: 12px;
+}
+
+.button {
+  background: linear-gradient(
+    135deg,
+    #ff0000 40%,
+    #ffffff 40%,
+    #ffffff 60%,
+    #ff0000 60%
+  );
+  background-size: 200% 100%;
+  background-position: left bottom;
+  border: 2px solid #000;
+  border-radius: 999px;
+  padding: 0.5rem 1rem;
+  font-weight: bold;
+  color: #000;
+  text-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  transition:
+    background-position 0.3s,
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+
+.button:hover:enabled {
+  background-position: right bottom;
+  transform: scale(1.05);
+  box-shadow:
+    0 0 10px rgba(255, 255, 255, 0.8),
+    0 0 20px rgba(255, 0, 0, 0.6);
+}
+
+.button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.info {
+  font-size: 1.2rem;
+  font-family: 'Pokemon Solid', sans-serif; /* если подключишь шрифт */
+  color: #333;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}

@@ -1,0 +1,66 @@
+/* TOP SECTION START */
+.topSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  background: #121212;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: #121212;
+  min-height: 90vh;
+  max-width: 1200px;
+  min-width: 600px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.logo {
+  height: 12em;
+  padding: 3.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+.suggestions-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+  background: #1e1e1e;
+  border: 1px solid #333;
+  max-height: 160px;
+  overflow-y: auto;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.suggestions-list li {
+  padding: 6px 10px;
+  cursor: pointer;
+}
+.suggestions-list li:hover {
+  background: #333;
+  color: #fff;
+}
+
+.top-logo {
+  max-width: 70%;
+}
+
+/* TOP SECTION END */

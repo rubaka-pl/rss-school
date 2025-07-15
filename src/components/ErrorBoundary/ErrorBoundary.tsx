@@ -1,14 +1,8 @@
-// src/components/ErrorBoundary.tsx
 import React from 'react';
-import '../App.css';
+import type { ErrorBoundaryState } from '../../types/app';
+import styles from './ErrorBoundary.module.css';
 
-interface ErrorBoundaryState {
-  hasError: boolean;
-  error: Error | null;
-  componentStack: string;
-}
-
-export class ErrorBoundary extends React.Component<
+export default class ErrorBoundary extends React.Component<
   React.PropsWithChildren<object>,
   ErrorBoundaryState
 > {
@@ -30,16 +24,16 @@ export class ErrorBoundary extends React.Component<
   render() {
     if (this.state.hasError) {
       return (
-        <section className="error-boundary">
-          <h2>Error:</h2>
+        <section className={styles['error-boundary']}>
+          <h2>Something went wrong.</h2>
           <p>
-            <strong>{this.state.error?.message ?? 'Unknown Error.'}</strong>
+            <strong>{this.state.error?.message ?? 'Unknown Error'}</strong>
           </p>
-          <details className="error-details">
+          <details className={styles['error-details']}>
             {this.state.componentStack}
           </details>
           <button
-            className="error-return-button"
+            className={styles['error-return-button']}
             onClick={() => window.location.reload()}
           >
             Return

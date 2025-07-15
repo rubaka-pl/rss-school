@@ -1,53 +1,19 @@
 import React from 'react';
-import { TopSection } from './components/TopSection';
-import { BottomSection } from './components/BottomSection';
-import { ErrorBoundary } from './components/ErrorBoundary';
-import { BuggyComponent } from './components/BuggyComponent';
-import './App.css';
-// =============================================================
-// I.
-// =============================================================
-function isError(error: unknown): error is Error {
-  return error instanceof Error && typeof (error as Error).message === 'string';
-}
-const PAGE_SIZE = 8;
-
-// =============================================================
-// II.
-// =============================================================
-interface AppState {
-  results: Result[];
-  loading: boolean;
-  errorMessage: string | null;
-  offset: number;
-  count: number;
-  searchTerm: string;
-  showBuggyComponent: boolean;
-}
-
-interface Result {
-  name: string;
-  description: string;
-  imageUrl: string;
-  height: number;
-  weight: number;
-  types: string[];
-  abilities: string[];
-}
-
-interface FlavorTextEntry {
-  flavor_text: string;
-  language: { name: string };
-}
-
-interface SpeciesData {
-  flavor_text_entries: FlavorTextEntry[];
-}
-
-// =============================================================
-// III.
-// =============================================================
-
+import TopSection from './components/TopSection/TopSection';
+import BottomSection from './components/BottomSection/BottomSection';
+import type { AppState } from './types/app';
+import {
+  fetchPage,
+  fetchPokemonList,
+  fetchFullPokemonDataByName,
+} from './api/pokemonApi';
+import { isError } from './utilities/typeGuards';
+import GlowCursor from './components/Cursor/Cursor';
+import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
+import BuggyBottom from './components/BuggyBottom/BuggyBottom';
+import { PAGE_SIZE } from './utilities/constants';
+import Pagination from './components/Pagination/Pagination';
+import { normalizeSearchTerm } from './utilities/stringUtils';
 export default class App extends React.Component<object, AppState> {
   state: AppState = {
     results: [],
@@ -57,156 +23,54 @@ export default class App extends React.Component<object, AppState> {
     count: 0,
     searchTerm: localStorage.getItem('searchTerm') || '',
     showBuggyComponent: false,
+    pokemonNames: [],
   };
 
-  private fetchFullData = async (
-    name: string,
-    url: string
-  ): Promise<Result> => {
-    const res = await fetch(url);
-    if (!res.ok) {
-      switch (res.status) {
-        case 404:
-          throw new Error(`Details for "${name}" not found (404).`);
-        case 401:
-          throw new Error(
-            `Unauthorized to access details for "${name}" (401).`
-          );
-        case 500:
-          throw new Error(`Server error getting details for "${name}" (500).`);
-        default:
-          throw new Error(
-            `Failed to fetch details for "${name}": ${res.status} ${res.statusText}`
-          );
-      }
-    }
-    const data = await res.json();
-
-    const speciesRes = await fetch(data.species.url);
-    if (!speciesRes.ok) {
-      switch (speciesRes.status) {
-        case 404:
-          throw new Error(`Species data for "${name}" not found (404).`);
-        case 401:
-          throw new Error(
-            `Unauthorized to access species data for "${name}" (401).`
-          );
-        default:
-          throw new Error(
-            `Failed to fetch species data for "${name}": ${speciesRes.status} ${speciesRes.statusText}`
-          );
-      }
-    }
-    const speciesData = (await speciesRes.json()) as SpeciesData;
-    const flavor = speciesData.flavor_text_entries.find(
-      (e) => e.language.name === 'en'
-    );
-    const description = flavor
-      ? flavor.flavor_text.replace(/\n|\f/g, ' ')
-      : 'No description';
-
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    return {
-      name,
-      description,
-      imageUrl: (data.sprites.front_default as string) || '',
-      height: data.height as number,
-      weight: data.weight as number,
-      types: (data.types as { type: { name: string } }[]).map(
-        (t) => t.type.name
-      ),
-      abilities: (data.abilities as { ability: { name: string } }[]).map(
-        (a) => a.ability.name
-      ),
-    };
-  };
-
-  private fetchPage = async (offset: number) => {
-    this.setState({ loading: true, errorMessage: null });
+  async componentDidMount() {
     try {
-      const res = await fetch(
-        `https://pokeapi.co/api/v2/pokemon?limit=${PAGE_SIZE}&offset=${offset}`
-      );
-      if (!res.ok) {
-        // Детальная обработка ошибок для fetchPage
-        switch (res.status) {
-          case 401:
-            throw new Error(`Unauthorized to fetch page (401).`);
-          case 403:
-            throw new Error(`Forbidden to fetch page (403).`);
-          case 404: // Хотя для пагинации 404 маловероятен, но можно учесть
-            throw new Error(`Page not found (404).`);
-          case 500:
-            throw new Error(`Server error fetching page (500).`);
-          default:
-            throw new Error(
-              `Failed to load page: ${res.status} ${res.statusText}`
-            );
-        }
-      }
-      const json = (await res.json()) as {
-        count: number;
-        results: { name: string; url: string }[];
-      };
-      const fullData = await Promise.all(
-        json.results.map((p) => this.fetchFullData(p.name, p.url))
-      );
-      this.setState({ results: fullData, offset, count: json.count });
-    } catch (e) {
-      console.error(e);
-      let errorMessage = 'Unknown error occurred during page fetch.';
-      if (isError(e)) {
-        errorMessage = e.message;
-      }
-      this.setState({ errorMessage: errorMessage });
-    } finally {
-      this.setState({ loading: false });
+      const pokemonNames = await fetchPokemonList();
+      this.setState({ pokemonNames });
+    } catch (error) {
+      console.error('Failed to load pokemon list:', error);
+      this.setState({ errorMessage: 'Failed to load pokemon list' });
     }
-  };
 
-  private handleSearch = async (term: string) => {
-    const query = term.trim().toLowerCase();
-    this.setState({
-      loading: true,
-      errorMessage: null,
-      searchTerm: query,
-      showBuggyComponent: false,
-    });
+    if (this.state.searchTerm) {
+      this.handleSearch(this.state.searchTerm);
+    } else {
+      this.loadPage(0);
+    }
+  }
+
+  handleSearch = async (term: string) => {
+    const query = normalizeSearchTerm(term);
+    this.setState({ loading: true, errorMessage: null, searchTerm: query });
     localStorage.setItem('searchTerm', query);
+
     if (!query) {
-      return this.fetchPage(0);
+      return this.loadPage(0);
     }
+
+    const filteredNames = this.state.pokemonNames.filter((name) =>
+      name.includes(query)
+    );
+
     try {
-      const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${query}`);
-      if (!res.ok) {
-        switch (res.status) {
-          case 404:
-            throw new Error(`Pokémon "${query}" not found (404).`);
-          case 401:
-            throw new Error(`Unauthorized to search for "${query}" (401).`);
-          case 500:
-            throw new Error(`Server error during search for "${query}" (500).`);
-          default:
-            throw new Error(
-              `Failed to search for "${query}": ${res.status} ${res.statusText}`
-            );
-        }
-      }
-      const data = await res.json();
-      const item = await this.fetchFullData(
-        data.name,
-        data.species.url.replace('/pokemon-species/', '/pokemon/') as string
+      const fullData = await Promise.all(
+        filteredNames.map((name) => fetchFullPokemonDataByName(name))
       );
-      this.setState({ results: [item], count: 1, offset: 0 });
-    } catch (e) {
-      console.error(e);
-      let errorMessage = 'Unknown error occurred during search.';
-      if (isError(e)) {
-        errorMessage = e.message;
-      }
       this.setState({
-        errorMessage: errorMessage,
+        results: fullData,
+        count: filteredNames.length,
+        offset: 0,
+      });
+    } catch (error) {
+      console.error('Search failed:', error);
+      const msg = isError(error)
+        ? `Failed to load some Pokémon`
+        : 'Unknown error occurred';
+      this.setState({
+        errorMessage: msg,
         results: [],
       });
     } finally {
@@ -214,23 +78,32 @@ export default class App extends React.Component<object, AppState> {
     }
   };
 
-  private handleTriggerBuggyDisplay = () => {
+  loadPage = async (offset: number) => {
+    this.setState({ loading: true, errorMessage: null });
+
+    try {
+      const { results, count } = await fetchPage(offset);
+      this.setState({ results, count, offset });
+    } catch (error) {
+      this.setState({
+        errorMessage: isError(error) ? error.message : 'Unknown error occurred',
+        results: [],
+      });
+    } finally {
+      this.setState({ loading: false });
+    }
+  };
+
+  handleReset = () => {
+    this.setState({ searchTerm: '' });
+    localStorage.removeItem('searchTerm');
+    this.loadPage(0);
+  };
+
+  handleError = () => {
     this.setState({ showBuggyComponent: true });
   };
 
-  private handleResetSearch = () => {
-    this.setState({ searchTerm: '', showBuggyComponent: false });
-    localStorage.removeItem('searchTerm');
-    this.fetchPage(0);
-  };
-
-  componentDidMount() {
-    if (this.state.searchTerm) {
-      this.handleSearch(this.state.searchTerm);
-    } else {
-      this.fetchPage(0);
-    }
-  }
   render() {
     const {
       results,
@@ -241,55 +114,45 @@ export default class App extends React.Component<object, AppState> {
       searchTerm,
       showBuggyComponent,
     } = this.state;
+
     const totalPages = Math.ceil(count / PAGE_SIZE);
-    const currentPage = Math.floor(offset / PAGE_SIZE) + 1;
 
     return (
-      <ErrorBoundary>
-        <div className="app-container">
-          <TopSection onSearch={this.handleSearch} />
+      <>
+        <ErrorBoundary>
+          <GlowCursor />
+          <TopSection loading={loading} onSearch={this.handleSearch} />
 
           {loading ? (
-            <span className="loader"></span>
+            <p>Loading…</p>
           ) : errorMessage ? (
-            <div className="error-message">{errorMessage}</div>
+            <p className="error-message">{errorMessage}</p>
           ) : (
             <ErrorBoundary>
-              <>
-                {showBuggyComponent ? (
-                  <BuggyComponent />
-                ) : (
+              {showBuggyComponent ? (
+                <BuggyBottom />
+              ) : (
+                <>
                   <BottomSection
                     results={results}
-                    onErrorButton={this.handleTriggerBuggyDisplay}
-                    onResetButton={this.handleResetSearch}
+                    onResetButton={this.handleReset}
+                    onErrorButton={this.handleError}
                   />
-                )}
 
-                {!searchTerm && totalPages > 1 && !showBuggyComponent && (
-                  <div className="pagination-controls">
-                    <button
-                      onClick={() => this.fetchPage(offset - PAGE_SIZE)}
-                      disabled={offset === 0}
-                    >
-                      Previous
-                    </button>
-                    <span style={{ margin: '0 20px' }}>
-                      Page {currentPage} of {totalPages}
-                    </span>
-                    <button
-                      onClick={() => this.fetchPage(offset + PAGE_SIZE)}
-                      disabled={currentPage === totalPages}
-                    >
-                      Next
-                    </button>
-                  </div>
-                )}
-              </>
+                  {!searchTerm && totalPages > 1 && (
+                    <Pagination
+                      offset={offset}
+                      total={count}
+                      pageSize={PAGE_SIZE}
+                      onPageChange={this.loadPage}
+                    />
+                  )}
+                </>
+              )}
             </ErrorBoundary>
           )}
-        </div>
-      </ErrorBoundary>
+        </ErrorBoundary>
+      </>
     );
   }
 }
