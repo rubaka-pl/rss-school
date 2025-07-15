@@ -16,6 +16,7 @@ export interface AppState {
   count: number;
   searchTerm: string;
   showBuggyComponent: boolean;
+  pokemonNames: string[];
 }
 
 export interface TopSectionState {

@@ -3,7 +3,7 @@ import styles from './TopSection.module.css';
 import SearchInput from '../SearchInput/SearchInput';
 import Loader from '../Loader/Loader';
 import type { TopSectionProps, TopSectionState } from '../../types/app';
-import { fetchPokemonSuggestions } from '../../api/pokemonApi';
+import { fetchPokemonList } from '../../api/pokemonApi';
 import { Component } from 'react';
 export default class TopSection extends Component<
   TopSectionProps,
@@ -17,7 +17,7 @@ export default class TopSection extends Component<
   };
 
   async componentDidMount() {
-    this.allNames = await fetchPokemonSuggestions();
+    this.allNames = await fetchPokemonList();
   }
 
   handleChange = (term: string) => {

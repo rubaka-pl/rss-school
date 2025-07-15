@@ -2,7 +2,11 @@ import React from 'react';
 import TopSection from './components/TopSection/TopSection';
 import BottomSection from './components/BottomSection/BottomSection';
 import type { AppState } from './types/app';
-import { fetchByName, fetchPage } from './api/pokemonApi';
+import {
+  fetchPage,
+  fetchPokemonList,
+  fetchFullPokemonDataByName,
+} from './api/pokemonApi';
 import { isError } from './utilities/typeGuards';
 import GlowCursor from './components/Cursor/Cursor';
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
@@ -19,9 +23,18 @@ export default class App extends React.Component<object, AppState> {
     count: 0,
     searchTerm: localStorage.getItem('searchTerm') || '',
     showBuggyComponent: false,
+    pokemonNames: [],
   };
 
-  componentDidMount() {
+  async componentDidMount() {
+    try {
+      const pokemonNames = await fetchPokemonList();
+      this.setState({ pokemonNames });
+    } catch (error) {
+      console.error('Failed to load pokemon list:', error);
+      this.setState({ errorMessage: 'Failed to load pokemon list' });
+    }
+
     if (this.state.searchTerm) {
       this.handleSearch(this.state.searchTerm);
     } else {
@@ -34,16 +47,27 @@ export default class App extends React.Component<object, AppState> {
     this.setState({ loading: true, errorMessage: null, searchTerm: query });
     localStorage.setItem('searchTerm', query);
 
-    if (!query) return this.loadPage(0);
+    if (!query) {
+      return this.loadPage(0);
+    }
+
+    const filteredNames = this.state.pokemonNames.filter((name) =>
+      name.includes(query)
+    );
 
     try {
-      const result = await fetchByName(query);
-      this.setState({ results: [result], count: 1, offset: 0 });
+      const fullData = await Promise.all(
+        filteredNames.map((name) => fetchFullPokemonDataByName(name))
+      );
+      this.setState({
+        results: fullData,
+        count: filteredNames.length,
+        offset: 0,
+      });
     } catch (error) {
       console.error('Search failed:', error);
-
       const msg = isError(error)
-        ? `Pokémon "${query}" not found`
+        ? `Failed to load some Pokémon`
         : 'Unknown error occurred';
       this.setState({
         errorMessage: msg,
