@@ -2,7 +2,7 @@
 
 <img width="1899" height="918" alt="image" src="https://github.com/user-attachments/assets/67dabfa5-427d-44b7-adff-b5c5e0062928" />
 
-# DEMO [preview](https://rubaka-pl.github.io/REACT2025Q3/)
+# DEMO [preview](https://rubaka-pl.github.io/rss-school/)
 ## About The Project
 
 This is a React application built with class components that interacts with the PokeAPI to fetch and display Pokémon data. The project emphasizes clean code, strong typing, and robust error handling to provide a smooth user experience.
