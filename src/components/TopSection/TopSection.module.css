@@ -1,4 +1,3 @@
-/* TOP SECTION START */
 .topSection {
   display: flex;
   flex-direction: column;
@@ -62,5 +61,3 @@
 .top-logo {
   max-width: 70%;
 }
-
-/* TOP SECTION END */
