@@ -42,7 +42,6 @@ describe('Pagination', () => {
   });
 
   it('disables Next button on last page', () => {
-    // total=25, pageSize=10 → totalPages=3, offset=20 → last page
     render(
       <Pagination
         offset={20}

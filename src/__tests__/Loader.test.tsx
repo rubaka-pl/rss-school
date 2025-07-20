@@ -1,4 +1,3 @@
-// src/__tests__/Loader.test.tsx
 import '@testing-library/jest-dom';
 import { render } from '@testing-library/react';
 import Loader from '../components/Loader/Loader';
@@ -14,7 +13,6 @@ describe('Loader', () => {
 
   it('renders exactly one element', () => {
     const { container } = render(<Loader />);
-    // Should only render the single <span>
     expect(container.childElementCount).toBe(1);
     expect(container.firstElementChild?.tagName).toBe('SPAN');
   });

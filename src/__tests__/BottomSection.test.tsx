@@ -1,4 +1,3 @@
-// src/__tests__/BottomSection.test.tsx
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -36,8 +35,8 @@ describe('BottomSection', () => {
         name: 'Testmon',
         imageUrl: 'http://img',
         description: 'A test Pokémon',
-        height: 40, // displayed as 4 m
-        weight: 60, // displayed as 6 kg
+        height: 40,
+        weight: 60,
         types: ['fire', 'flying'],
         abilities: ['blaze', 'solar-power'],
       },

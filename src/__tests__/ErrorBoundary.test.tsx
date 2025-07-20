@@ -27,7 +27,6 @@ describe('ErrorBoundary', () => {
     );
     expect(rawCall).toBeDefined();
 
-    // Narrow out `undefined` into a new variable
     const callArgs = rawCall;
     if (!callArgs) {
       throw new Error('Expected ErrorBoundary console.error call not found');

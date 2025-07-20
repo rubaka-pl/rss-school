@@ -1,4 +1,3 @@
-// src/__tests__/GlowCursor.test.tsx
 import '@testing-library/jest-dom';
 import { render } from '@testing-library/react';
 import GlowCursor from '../components/Cursor/Cursor';
