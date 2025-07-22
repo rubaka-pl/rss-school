@@ -1,29 +1,12 @@
 import type { Result } from '../types/app';
+import type {
+  PokemonListResponse,
+  PokemonData,
+  SpeciesData,
+} from '../types/pokemon';
+
 import { PAGE_SIZE } from '../utilities/constants';
 import { normalizeFlavorText } from '../utilities/stringUtils';
-
-interface PokemonListResponse {
-  count: number;
-  results: Array<{ name: string; url: string }>;
-}
-
-interface PokemonData {
-  sprites: { front_default: string | null };
-  height: number;
-  weight: number;
-  types: Array<{ type: { name: string } }>;
-  abilities: Array<{ ability: { name: string } }>;
-  species: { url: string };
-}
-
-interface FlavorTextEntry {
-  flavor_text: string;
-  language: { name: string };
-}
-
-interface SpeciesData {
-  flavor_text_entries: FlavorTextEntry[];
-}
 
 export async function fetchPokemonList(): Promise<string[]> {
   const res = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=100000`);
