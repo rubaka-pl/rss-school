@@ -174,7 +174,13 @@ tbody tr td {
     transform 0.2s,
     box-shadow 0.2s;
 }
-
+.detailsLink:hover {
+  background-position: right bottom;
+  transform: scale(1.05);
+  box-shadow:
+    0 0 10px rgba(255, 255, 255, 0.8),
+    0 0 20px rgba(255, 0, 0, 0.6);
+}
 .detailsLink::before {
   content: '';
   position: absolute;

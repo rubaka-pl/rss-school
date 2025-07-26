@@ -6,12 +6,14 @@ import App from './App';
 import AboutPage from './pages/AboutPage/AboutPage';
 import NotFoundPage from './pages/NotFoundPage/NotFoundPage';
 import './index.css';
+import GlowCursor from './components/Cursor/Cursor';
 
 const rootEl = document.getElementById('root');
 if (!rootEl) throw new Error('Root element not found');
 
 createRoot(rootEl).render(
   <StrictMode>
+    <GlowCursor />
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<App />} />

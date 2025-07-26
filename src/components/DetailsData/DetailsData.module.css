@@ -9,6 +9,10 @@
   animation: fadeIn 0.3s ease-in-out;
 }
 
+.images img {
+  width: 50%;
+}
+
 .modal {
   background: #1e1e1e;
   padding: 2rem;

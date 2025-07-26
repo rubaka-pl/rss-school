@@ -42,11 +42,18 @@ export const handlers = [
       const { name } = params;
       return HttpResponse.json(
         {
+          base_experience: 50,
           sprites: { front_default: `${name}-img` },
           height: 10,
           weight: 20,
           types: [{ type: { name: 't' } }],
           abilities: [{ ability: { name: 'a' } }],
+          stats: [
+            {
+              base_stat: 42,
+              stat: { name: 'speed' },
+            },
+          ],
           species: { url: `https://pokeapi.co/api/v2/pokemon-species/${name}` },
         },
         { status: 200 }
@@ -66,6 +73,10 @@ export const handlers = [
               language: { name: 'en' },
             },
           ],
+          color: { name: 'blue' },
+          habitat: { name: 'forest' },
+          is_legendary: false,
+          is_mythical: false,
         },
         { status: 200 }
       );

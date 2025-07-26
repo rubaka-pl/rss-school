@@ -18,7 +18,7 @@ const useLocalStorageState = (key: string, defaultValue: string) => {
   return [value, setValue] as const;
 };
 
-const TopSection = ({ onSearch, loading }: TopSectionProps) => {
+const TopSection = ({ onSearch, loading, onReset }: TopSectionProps) => {
   const [searchTerm, setSearchTerm] = useLocalStorageState('searchTerm', '');
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [allNames, setAllNames] = useState<string[]>([]);
@@ -58,13 +58,23 @@ const TopSection = ({ onSearch, loading }: TopSectionProps) => {
     setSuggestions([]);
     onSearch(term);
   };
-
+  const handleLogoClick = () => {
+    onReset();
+  };
   return (
     <header className={styles.topSection}>
       {loading ? (
         <Loader />
       ) : (
-        <img src={Logo} alt="Logo" className={styles.logo} />
+        <img
+          src={Logo}
+          alt="Logo"
+          className={styles.logo}
+          onClick={() => {
+            handleLogoClick();
+          }}
+          style={{ cursor: 'pointer' }}
+        />
       )}
 
       <SearchInput

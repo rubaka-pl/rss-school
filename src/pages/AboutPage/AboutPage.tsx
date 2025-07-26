@@ -8,7 +8,7 @@ const AboutPage = () => {
       <p>
         This Pokédex was created as part of the React course at{' '}
         <a
-          href="https://github.com/rolling-scopes-school/tasks/blob/master/react/modules/tasks/functional-routing.md"
+          href="https://rs.school/courses/reactjs"
           target="_blank"
           rel="noopener noreferrer"
         >
@@ -29,20 +29,19 @@ const AboutPage = () => {
         <li>Detail view with dynamic routing</li>
         <li>Error boundary with test component</li>
         <li>Local storage support</li>
-        <li>Custom glowing cursor for fun ✨</li>
+        <li>Custom glowing cursor for fun =)</li>
       </ul>
       <p>
         This project demonstrates the use of React functional components, hooks,
         React Router (v7), and modular CSS.
       </p>
       <p className="author">
-        🔥 WORK DONE BY RUBAKA-PL 🔥 <br />
+        WORK DONE BY RUBAKA-PL <br />
         GitHub:{' '}
         <a
           href="https://github.com/rubaka-pl"
           target="_blank"
           rel="noopener noreferrer"
-          style={{ color: '#007bff', textDecoration: 'underline' }}
         >
           https://github.com/rubaka-pl
         </a>

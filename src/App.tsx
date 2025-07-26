@@ -1,23 +1,26 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-
+import {
+  getValidPageFromParams,
+  getOffsetFromPage,
+  getTotalPages,
+} from './utilities/paginationUtils';
 import TopSection from './components/TopSection/TopSection';
 import BottomSection from './components/BottomSection/BottomSection';
-import GlowCursor from './components/Cursor/Cursor';
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
 import BuggyBottom from './components/BuggyBottom/BuggyBottom';
 import Pagination from './components/Pagination/Pagination';
 
-import {
-  fetchPage,
-  fetchPokemonList,
-  fetchFullPokemonDataByName,
-} from './api/pokemonApi';
+import { fetchPage, fetchPokemonList } from './api/pokemonApi';
+import { fetchDetailedPokemonData } from './api/pokemonDetailed';
 import { normalizeSearchTerm } from './utilities/stringUtils';
 import { isError } from './utilities/typeGuards';
 import { PAGE_SIZE } from './utilities/constants';
 import type { Result } from './types/app';
 import DetailsData from './components/DetailsData/DetailsData';
+import type { DetailedResult } from './types/pokemon';
+
+import { useLocalStorage } from './hooks/useLocalStorage';
 
 const App = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -26,18 +29,20 @@ const App = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [count, setCount] = useState(0);
   const [pokemonNames, setPokemonNames] = useState<string[]>([]);
-  const [searchTerm, setSearchTerm] = useState(
-    localStorage.getItem('searchTerm') || ''
+  const [searchTerm, setSearchTerm, clearSearchTerm] = useLocalStorage<string>(
+    'searchTerm',
+    ''
   );
   const [showBuggyComponent, setShowBuggyComponent] = useState(false);
-  const page = Number(searchParams.get('page')) || 1;
-  const offset = (page - 1) * PAGE_SIZE;
   const detailsName = searchParams.get('details');
-  const [detailsData, setDetailsData] = useState<Result | null>(null);
+  const [detailsData, setDetailsData] = useState<DetailedResult | null>(null);
 
+  const page = getValidPageFromParams(searchParams);
+  const offset = getOffsetFromPage(page, PAGE_SIZE);
+  const totalPages = getTotalPages(count, PAGE_SIZE);
   useEffect(() => {
     if (detailsName) {
-      fetchFullPokemonDataByName(detailsName).then(setDetailsData);
+      fetchDetailedPokemonData(detailsName).then(setDetailsData);
     } else {
       setDetailsData(null);
     }
@@ -49,13 +54,10 @@ const App = () => {
         const names = await fetchPokemonList();
         setPokemonNames(names);
 
-        const storedTerm = localStorage.getItem('searchTerm') || '';
-        setSearchTerm(storedTerm);
-
-        if (storedTerm) {
-          await handleSearch(storedTerm);
+        if (searchTerm) {
+          await handleSearch(searchTerm);
         } else {
-          await loadPage(offset);
+          await loadPageByPageNumber(page);
         }
       } catch (error) {
         console.error('Failed to initialize:', error);
@@ -71,7 +73,6 @@ const App = () => {
     setLoading(true);
     setErrorMessage(null);
     setSearchTerm(query);
-    localStorage.setItem('searchTerm', query);
     setSearchParams({});
 
     if (!query) {
@@ -83,7 +84,7 @@ const App = () => {
 
     try {
       const fullData = await Promise.all(
-        filteredNames.map((name) => fetchFullPokemonDataByName(name))
+        filteredNames.map((name) => fetchDetailedPokemonData(name))
       );
       setResults(fullData);
       setCount(filteredNames.length);
@@ -98,16 +99,21 @@ const App = () => {
       setLoading(false);
     }
   };
-
   const loadPage = async (offset: number) => {
     setLoading(true);
     setErrorMessage(null);
 
     try {
       const { results, count } = await fetchPage(offset);
+      const currentPage = Math.floor(offset / PAGE_SIZE) + 1;
+      const totalPages = getTotalPages(count, PAGE_SIZE);
+
       setResults(results);
       setCount(count);
-      setSearchParams({ page: String(Math.floor(offset / PAGE_SIZE) + 1) });
+
+      setSearchParams({
+        page: String(Math.min(currentPage, totalPages)),
+      });
     } catch (error) {
       setErrorMessage(
         isError(error) ? error.message : 'Unknown error occurred'
@@ -117,10 +123,13 @@ const App = () => {
       setLoading(false);
     }
   };
+  const loadPageByPageNumber = async (pageNumber: number) => {
+    const newOffset = (pageNumber - 1) * PAGE_SIZE;
+    await loadPage(newOffset);
+  };
 
   const handleReset = () => {
-    setSearchTerm('');
-    localStorage.removeItem('searchTerm');
+    clearSearchTerm();
     setSearchParams({ page: '1' });
     loadPage(0);
   };
@@ -129,12 +138,14 @@ const App = () => {
     setShowBuggyComponent(true);
   };
 
-  const totalPages = Math.ceil(count / PAGE_SIZE);
-
   return (
     <ErrorBoundary>
-      <GlowCursor />
-      <TopSection loading={loading} onSearch={handleSearch} />
+      <TopSection
+        onReset={handleReset}
+        loading={loading}
+        onSearch={handleSearch}
+        onError={handleError}
+      />
 
       {loading ? (
         <p>Loading…</p>

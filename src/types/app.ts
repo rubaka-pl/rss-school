@@ -1,5 +1,5 @@
 import type { SetURLSearchParams } from 'react-router-dom';
-
+import type { DetailedResult } from './pokemon';
 export interface Result {
   name: string;
   description: string;
@@ -29,6 +29,8 @@ export interface TopSectionState {
 export interface TopSectionProps {
   onSearch(term: string): void;
   loading: boolean;
+  onReset: () => void;
+  onError: () => void;
 }
 
 export interface ButtonProps {
@@ -68,8 +70,7 @@ export interface SearchProps {
   onResults(results: Result[], count: number, offset: number): void;
   pageSize: number;
 }
-
 export interface PropsDetails {
-  data: Result;
+  data: DetailedResult;
   onClose: () => void;
 }

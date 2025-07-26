@@ -9,14 +9,46 @@ import { MemoryRouter } from 'react-router-dom';
 vi.mock('../api/pokemonApi', () => ({
   fetchPage: vi.fn().mockResolvedValue({ results: [], count: 0 }),
   fetchPokemonList: vi.fn().mockResolvedValue(['pikachu', 'charmander']),
-  fetchFullPokemonDataByName: vi.fn().mockResolvedValue([]),
+  fetchDetailedPokemonData: vi.fn().mockResolvedValue([]),
+}));
+vi.mock('../api/pokemonDetailed', () => ({
+  fetchDetailedPokemonData: vi.fn().mockResolvedValue({
+    name: 'Pikachu',
+    animatedImageUrl: 'https://example.com/pikachu.gif',
+    imageUrl: 'https://example.com/pikachu.png',
+    description: 'Electric type Pokémon.',
+    baseExperience: 112,
+    height: 40,
+    weight: 600,
+    types: ['Electric'],
+    abilities: ['Static', 'Lightning Rod'],
+    color: 'Yellow',
+    habitat: 'Forest',
+    isLegendary: false,
+    isMythical: false,
+    stats: [
+      { name: 'hp', value: 35 },
+      { name: 'attack', value: 55 },
+    ],
+  }),
 }));
 
 vi.mock('../components/TopSection/TopSection', () => ({
-  default: ({ onSearch }: { onSearch(term: string): void }) => (
-    <button data-testid="search-btn" onClick={() => onSearch('pi')}>
-      Search
-    </button>
+  default: ({
+    onSearch,
+    onError,
+  }: {
+    onSearch(term: string): void;
+    onError(): void;
+  }) => (
+    <>
+      <button data-testid="search-btn" onClick={() => onSearch('pik')}>
+        Search
+      </button>
+      <button data-testid="error-btn" onClick={onError}>
+        Trigger Error
+      </button>
+    </>
   ),
 }));
 
@@ -84,15 +116,42 @@ describe('App (simplified)', () => {
   });
 
   it('triggers search and renders bottom when Search button clicked', async () => {
-    const { fetchFullPokemonDataByName } = await import('../api/pokemonApi');
+    const { fetchDetailedPokemonData } = await import('../api/pokemonDetailed');
     render(
       <MemoryRouter>
         <App />
       </MemoryRouter>
     );
     await userEvent.click(screen.getByTestId('search-btn'));
-    expect(fetchFullPokemonDataByName).toHaveBeenCalledWith('pikachu');
-    // bottom still visible after search
+    expect(fetchDetailedPokemonData).toHaveBeenCalledWith('pikachu');
     expect(await screen.findByTestId('bottom')).toBeInTheDocument();
   });
+});
+
+it('shows BuggyBottom when onErrorButton is triggered', async () => {
+  render(
+    <MemoryRouter>
+      <App />
+    </MemoryRouter>
+  );
+
+  const errorButton = await screen.findByTestId('error-btn');
+  await userEvent.click(errorButton);
+
+  expect(await screen.findByTestId('buggy')).toBeInTheDocument();
+});
+
+it('loads and renders DetailsData when ?details param is present', async () => {
+  const url = new URLSearchParams({ details: 'pikachu' });
+  render(
+    <MemoryRouter initialEntries={[`/?${url.toString()}`]}>
+      <App />
+    </MemoryRouter>
+  );
+
+  expect(await screen.findByText('Pikachu')).toBeInTheDocument();
+
+  const closeBtn = screen.getByRole('button', { name: /✖/ });
+  await userEvent.click(closeBtn);
+  expect(screen.queryByText('Pikachu')).not.toBeInTheDocument();
 });

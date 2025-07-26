@@ -23,6 +23,8 @@ export default defineConfig({
         'eslint.config.js',
         'vite.config.ts',
         'src/utilities/typeGuards.ts',
+        'src/pages/NotFoundPage.tsx',
+        'src/pages/AboutPage.tsx',
       ],
     },
   },
