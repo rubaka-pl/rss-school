@@ -1,73 +1,81 @@
+import { useState, useEffect, useCallback } from 'react';
 import Logo from '../../assets/logo.svg';
 import styles from './TopSection.module.css';
 import SearchInput from '../SearchInput/SearchInput';
 import Loader from '../Loader/Loader';
-import type { TopSectionProps, TopSectionState } from '../../types/app';
 import { fetchPokemonList } from '../../api/pokemonApi';
-import { Component } from 'react';
-export default class TopSection extends Component<
-  TopSectionProps,
-  TopSectionState
-> {
-  private allNames: string[] = [];
+import type { TopSectionProps } from '../../types/app';
 
-  state: TopSectionState = {
-    searchTerm: localStorage.getItem('searchTerm') || '',
-    suggestions: [],
+const useLocalStorageState = (key: string, defaultValue: string) => {
+  const [value, setValue] = useState(
+    () => localStorage.getItem(key) || defaultValue
+  );
+
+  useEffect(() => {
+    localStorage.setItem(key, value);
+  }, [key, value]);
+
+  return [value, setValue] as const;
+};
+
+const TopSection = ({ onSearch, loading }: TopSectionProps) => {
+  const [searchTerm, setSearchTerm] = useLocalStorageState('searchTerm', '');
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [allNames, setAllNames] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchNames = async () => {
+      const names = await fetchPokemonList();
+      setAllNames(names);
+    };
+    fetchNames();
+  }, []);
+
+  const handleChange = useCallback(
+    (term: string) => {
+      setSearchTerm(term);
+
+      if (!term) {
+        setSuggestions([]);
+        return;
+      }
+
+      const q = term.toLowerCase();
+      const matches = allNames.filter((name) => name.startsWith(q)).slice(0, 6);
+      setSuggestions(matches);
+    },
+    [allNames, setSearchTerm]
+  );
+
+  const handleSuggestionClick = (name: string) => {
+    setSearchTerm(name);
+    setSuggestions([]);
+    onSearch(name);
   };
 
-  async componentDidMount() {
-    this.allNames = await fetchPokemonList();
-  }
-
-  handleChange = (term: string) => {
-    this.setState({ searchTerm: term });
-
-    if (!term) {
-      this.setState({ suggestions: [] });
-      return;
-    }
-
-    const q = term.toLowerCase();
-    const matches = this.allNames
-      .filter((name) => name.startsWith(q))
-      .slice(0, 6);
-    this.setState({ suggestions: matches });
+  const handleSearch = () => {
+    const term = searchTerm.trim();
+    setSuggestions([]);
+    onSearch(term);
   };
 
-  handleSuggestionClick = (name: string) => {
-    localStorage.setItem('searchTerm', name);
-    this.setState({ searchTerm: name, suggestions: [] });
-    this.props.onSearch(name);
-  };
+  return (
+    <header className={styles.topSection}>
+      {loading ? (
+        <Loader />
+      ) : (
+        <img src={Logo} alt="Logo" className={styles.logo} />
+      )}
 
-  handleSearch = () => {
-    const term = this.state.searchTerm.trim();
-    localStorage.setItem('searchTerm', term);
-    this.setState({ suggestions: [] });
-    this.props.onSearch(term);
-  };
+      <SearchInput
+        value={searchTerm}
+        onChange={handleChange}
+        onSearch={handleSearch}
+        suggestions={suggestions}
+        onSuggestionClick={handleSuggestionClick}
+      />
+    </header>
+  );
+};
 
-  render() {
-    const { searchTerm, suggestions } = this.state;
-    const { loading } = this.props;
-
-    return (
-      <header className={styles.topSection}>
-        {loading ? (
-          <Loader />
-        ) : (
-          <img src={Logo} alt="Logo" className={styles.logo} />
-        )}
-
-        <SearchInput
-          value={searchTerm}
-          onChange={this.handleChange}
-          onSearch={this.handleSearch}
-          suggestions={suggestions}
-          onSuggestionClick={this.handleSuggestionClick}
-        />
-      </header>
-    );
-  }
-}
+export default TopSection;
