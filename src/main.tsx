@@ -14,7 +14,7 @@ if (!rootEl) throw new Error('Root element not found');
 createRoot(rootEl).render(
   <StrictMode>
     <GlowCursor />
-    <BrowserRouter>
+    <BrowserRouter basename="/rss-school">
       <Routes>
         <Route path="/" element={<App />} />
         <Route path="/about" element={<AboutPage />} />
