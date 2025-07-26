@@ -5,7 +5,6 @@ import { Link } from 'react-router-dom';
 const BottomSection = ({
   results,
   onResetButton,
-  onErrorButton,
   searchParams,
   setSearchParams,
 }: BottomSectionProps) => {
@@ -85,9 +84,6 @@ const BottomSection = ({
       <div className={styles.controls}>
         <button className={styles.resetButton} onClick={onResetButton}>
           Reset Search
-        </button>
-        <button className={styles.errorButton} onClick={onErrorButton}>
-          Throw Error
         </button>
         <Link to="/about" className={styles.navButton}>
           Go to About

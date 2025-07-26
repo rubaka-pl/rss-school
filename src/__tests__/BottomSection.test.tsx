@@ -91,15 +91,12 @@ describe('BottomSection', () => {
     );
 
     const resetBtn = screen.getByRole('button', { name: /reset search/i });
-    const errorBtn = screen.getByRole('button', { name: /throw error/i });
 
     expect(resetBtn).toBeEnabled();
-    expect(errorBtn).toBeEnabled();
 
     await userEvent.click(resetBtn);
     expect(onResetButton).toHaveBeenCalledTimes(1);
 
-    await userEvent.click(errorBtn);
-    expect(onErrorButton).toHaveBeenCalledTimes(1);
+
   });
 });
