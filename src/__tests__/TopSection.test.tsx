@@ -22,7 +22,14 @@ describe('TopSection — suggestions list behavior', () => {
   });
 
   it('shows and then clears the suggestions list when you type and clear', async () => {
-    render(<TopSection loading={false} onSearch={onSearch} />);
+    render(
+      <TopSection
+        onReset={vi.fn()}
+        onError={vi.fn()}
+        loading={false}
+        onSearch={onSearch}
+      />
+    );
     const input = screen.getByRole('textbox');
 
     await userEvent.type(input, 'pi');
