@@ -1,3 +1,5 @@
+import type { SetURLSearchParams } from 'react-router-dom';
+
 export interface Result {
   name: string;
   description: string;
@@ -38,6 +40,8 @@ export interface BottomSectionProps {
   results: Result[];
   onErrorButton(): void;
   onResetButton(): void;
+  setSearchParams: SetURLSearchParams;
+  searchParams: URLSearchParams;
 }
 
 export interface ErrorBoundaryState {
@@ -63,4 +67,9 @@ export interface PaginationProps {
 export interface SearchProps {
   onResults(results: Result[], count: number, offset: number): void;
   pageSize: number;
+}
+
+export interface PropsDetails {
+  data: Result;
+  onClose: () => void;
 }

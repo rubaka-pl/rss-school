@@ -134,3 +134,57 @@ tbody tr td {
   height: 250px;
   text-align: center;
 }
+
+.navButton {
+  padding: 10px 20px;
+  background-color: #b30000;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.3s ease;
+  color: white;
+}
+.navButton:hover {
+  background-color: #990000;
+}
+
+.detailsLink {
+  margin-top: 10px;
+  padding: 12px 20px;
+  background: linear-gradient(
+    135deg,
+    #ff0000 40%,
+    #ffffff 40%,
+    #ffffff 60%,
+    #ff0000 60%
+  );
+  background-size: 200% 100%;
+  background-position: left bottom;
+  border: 2px solid #000;
+  border-radius: 999px;
+  padding: 0.5rem 1rem;
+  font-weight: bold;
+  color: #000;
+  text-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  transition:
+    background-position 0.3s,
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+
+.detailsLink::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 200%;
+  height: 200%;
+  background: rgba(255, 255, 255, 0.2);
+  transform: translate(-50%, -50%) scale(0);
+  border-radius: 50%;
+  transition: transform 0.5s ease;
+  z-index: 0;
+}

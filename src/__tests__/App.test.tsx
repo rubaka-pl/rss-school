@@ -4,6 +4,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
 import type { MockedFunction } from 'vitest';
+import { MemoryRouter } from 'react-router-dom';
 
 vi.mock('../api/pokemonApi', () => ({
   fetchPage: vi.fn().mockResolvedValue({ results: [], count: 0 }),
@@ -48,7 +49,11 @@ describe('App (simplified)', () => {
   });
 
   it('on mount, fetchPokemonList then fetchPage(0)', async () => {
-    render(<App />);
+    render(
+      <MemoryRouter>
+        <App />
+      </MemoryRouter>
+    );
     const { fetchPokemonList, fetchPage } = await import('../api/pokemonApi');
     expect(fetchPokemonList).toHaveBeenCalled();
     await waitFor(() => expect(fetchPage).toHaveBeenCalledWith(0));
@@ -56,7 +61,11 @@ describe('App (simplified)', () => {
 
   it('uses saved searchTerm to skip pagination', async () => {
     localStorage.setItem('searchTerm', 'pikachu');
-    render(<App />);
+    render(
+      <MemoryRouter>
+        <App />
+      </MemoryRouter>
+    );
     expect(await screen.findByTestId('bottom')).toBeInTheDocument();
     expect(screen.queryByTestId('pager')).toBeNull();
   });
@@ -65,14 +74,22 @@ describe('App (simplified)', () => {
     const api = await import('../api/pokemonApi');
     const fetchPage = api.fetchPage as MockedFunction<typeof api.fetchPage>;
     fetchPage.mockResolvedValueOnce({ results: [], count: 30 });
-    render(<App />);
+    render(
+      <MemoryRouter>
+        <App />
+      </MemoryRouter>
+    );
     await waitFor(() => expect(fetchPage).toHaveBeenCalled());
     expect(screen.getByTestId('pager')).toBeInTheDocument();
   });
 
   it('triggers search and renders bottom when Search button clicked', async () => {
     const { fetchFullPokemonDataByName } = await import('../api/pokemonApi');
-    render(<App />);
+    render(
+      <MemoryRouter>
+        <App />
+      </MemoryRouter>
+    );
     await userEvent.click(screen.getByTestId('search-btn'));
     expect(fetchFullPokemonDataByName).toHaveBeenCalledWith('pikachu');
     // bottom still visible after search

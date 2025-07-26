@@ -1,10 +1,13 @@
 import styles from './BottomSection.module.css';
 import type { BottomSectionProps } from '../../types/app';
+import { Link } from 'react-router-dom';
 
 const BottomSection = ({
   results,
   onResetButton,
   onErrorButton,
+  searchParams,
+  setSearchParams,
 }: BottomSectionProps) => {
   const renderEmpty = () => (
     <div className={styles.empty}>
@@ -55,6 +58,18 @@ const BottomSection = ({
                 <li>
                   <strong>Abilities:</strong> {item.abilities.join(', ')}
                 </li>
+                <li>
+                  <button
+                    className={styles.detailsLink}
+                    onClick={() => {
+                      const newParams = new URLSearchParams(searchParams);
+                      newParams.set('details', item.name);
+                      setSearchParams(newParams);
+                    }}
+                  >
+                    Learn More
+                  </button>
+                </li>
               </ul>
             </td>
           </tr>
@@ -74,6 +89,12 @@ const BottomSection = ({
         <button className={styles.errorButton} onClick={onErrorButton}>
           Throw Error
         </button>
+        <Link to="/about" className={styles.navButton}>
+          Go to About
+        </Link>
+        <Link to="/404" className={styles.navButton}>
+          Go to Not Found
+        </Link>
       </div>
     </section>
   );

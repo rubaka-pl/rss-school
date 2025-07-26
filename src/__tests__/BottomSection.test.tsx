@@ -4,22 +4,28 @@ import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
 import BottomSection from '../components/BottomSection/BottomSection';
 import type { Result } from '../types/app';
+import { MemoryRouter } from 'react-router-dom';
 
 describe('BottomSection', () => {
   const onResetButton = vi.fn();
   const onErrorButton = vi.fn();
-
+  const mockSetSearchParams = vi.fn();
+  const mockSearchParams = new URLSearchParams();
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it('renders empty state when results is empty', () => {
     render(
-      <BottomSection
-        results={[]}
-        onResetButton={onResetButton}
-        onErrorButton={onErrorButton}
-      />
+      <MemoryRouter>
+        <BottomSection
+          results={[]}
+          onResetButton={onResetButton}
+          onErrorButton={onErrorButton}
+          setSearchParams={mockSetSearchParams}
+          searchParams={mockSearchParams}
+        />
+      </MemoryRouter>
     );
 
     expect(screen.getByText('This is a Pokémon search.')).toBeInTheDocument();
@@ -43,21 +49,23 @@ describe('BottomSection', () => {
     ];
 
     render(
-      <BottomSection
-        results={results}
-        onResetButton={onResetButton}
-        onErrorButton={onErrorButton}
-      />
+      <MemoryRouter>
+        <BottomSection
+          results={results}
+          onResetButton={onResetButton}
+          onErrorButton={onErrorButton}
+          setSearchParams={mockSetSearchParams}
+          searchParams={mockSearchParams}
+        />
+      </MemoryRouter>
     );
 
     const table = screen.getByRole('table');
     expect(table).toBeInTheDocument();
 
-    // Check header
     expect(screen.getByText('Pokemon')).toBeInTheDocument();
     expect(screen.getByText('Details')).toBeInTheDocument();
 
-    // Check row content
     const img = screen.getByRole('img', { name: 'Testmon' });
     expect(img).toHaveAttribute('src', 'http://img');
 
@@ -71,11 +79,15 @@ describe('BottomSection', () => {
 
   it('always shows Reset Search and Throw Error buttons and responds to clicks', async () => {
     render(
-      <BottomSection
-        results={[]}
-        onResetButton={onResetButton}
-        onErrorButton={onErrorButton}
-      />
+      <MemoryRouter>
+        <BottomSection
+          results={[]}
+          onResetButton={onResetButton}
+          onErrorButton={onErrorButton}
+          setSearchParams={mockSetSearchParams}
+          searchParams={mockSearchParams}
+        />
+      </MemoryRouter>
     );
 
     const resetBtn = screen.getByRole('button', { name: /reset search/i });
