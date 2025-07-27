@@ -74,3 +74,12 @@ export interface PropsDetails {
   data: DetailedResult;
   onClose: () => void;
 }
+export interface SelectedItem {
+  id: string;
+  name: string;
+  description: string;
+  detailsUrl: string;
+}
+export interface State {
+  items: Record<string, SelectedItem>;
+}

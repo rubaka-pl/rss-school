@@ -96,7 +96,5 @@ describe('BottomSection', () => {
 
     await userEvent.click(resetBtn);
     expect(onResetButton).toHaveBeenCalledTimes(1);
-
-
   });
 });

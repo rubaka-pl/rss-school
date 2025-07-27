@@ -61,3 +61,10 @@
 .top-logo {
   max-width: 70%;
 }
+
+@media screen and (max-width: 600px) {
+  .logo {
+    height: 7.1em;
+    padding: 2.5em;
+  }
+}

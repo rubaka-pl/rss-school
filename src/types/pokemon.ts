@@ -56,4 +56,5 @@ export interface DetailedResult {
   habitat: string | null;
   isLegendary: boolean;
   isMythical: boolean;
+  detailsUrl?: string;
 }
