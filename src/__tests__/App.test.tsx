@@ -5,6 +5,7 @@ import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
 import type { MockedFunction } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
+import { ThemeProvider } from '../context/ThemeContext';
 
 vi.mock('../api/pokemonApi', () => ({
   fetchPage: vi.fn().mockResolvedValue({ results: [], count: 0 }),
@@ -82,9 +83,11 @@ describe('App (simplified)', () => {
 
   it('on mount, fetchPokemonList then fetchPage(0)', async () => {
     render(
-      <MemoryRouter>
-        <App />
-      </MemoryRouter>
+      <ThemeProvider>
+        <MemoryRouter>
+          <App />
+        </MemoryRouter>
+      </ThemeProvider>
     );
     const { fetchPokemonList, fetchPage } = await import('../api/pokemonApi');
     expect(fetchPokemonList).toHaveBeenCalled();
@@ -94,9 +97,11 @@ describe('App (simplified)', () => {
   it('uses saved searchTerm to skip pagination', async () => {
     localStorage.setItem('searchTerm', 'pikachu');
     render(
-      <MemoryRouter>
-        <App />
-      </MemoryRouter>
+      <ThemeProvider>
+        <MemoryRouter>
+          <App />
+        </MemoryRouter>
+      </ThemeProvider>
     );
     expect(await screen.findByTestId('bottom')).toBeInTheDocument();
     expect(screen.queryByTestId('pager')).toBeNull();
@@ -107,9 +112,11 @@ describe('App (simplified)', () => {
     const fetchPage = api.fetchPage as MockedFunction<typeof api.fetchPage>;
     fetchPage.mockResolvedValueOnce({ results: [], count: 30 });
     render(
-      <MemoryRouter>
-        <App />
-      </MemoryRouter>
+      <ThemeProvider>
+        <MemoryRouter>
+          <App />
+        </MemoryRouter>
+      </ThemeProvider>
     );
     await waitFor(() => expect(fetchPage).toHaveBeenCalled());
     expect(screen.getByTestId('pager')).toBeInTheDocument();
@@ -118,9 +125,11 @@ describe('App (simplified)', () => {
   it('triggers search and renders bottom when Search button clicked', async () => {
     const { fetchDetailedPokemonData } = await import('../api/pokemonDetailed');
     render(
-      <MemoryRouter>
-        <App />
-      </MemoryRouter>
+      <ThemeProvider>
+        <MemoryRouter>
+          <App />
+        </MemoryRouter>
+      </ThemeProvider>
     );
     await userEvent.click(screen.getByTestId('search-btn'));
     expect(fetchDetailedPokemonData).toHaveBeenCalledWith('pikachu');
@@ -130,9 +139,11 @@ describe('App (simplified)', () => {
 
 it('shows BuggyBottom when onErrorButton is triggered', async () => {
   render(
-    <MemoryRouter>
-      <App />
-    </MemoryRouter>
+    <ThemeProvider>
+      <MemoryRouter>
+        <App />
+      </MemoryRouter>
+    </ThemeProvider>
   );
 
   const errorButton = await screen.findByTestId('error-btn');
@@ -144,9 +155,11 @@ it('shows BuggyBottom when onErrorButton is triggered', async () => {
 it('loads and renders DetailsData when ?details param is present', async () => {
   const url = new URLSearchParams({ details: 'pikachu' });
   render(
-    <MemoryRouter initialEntries={[`/?${url.toString()}`]}>
-      <App />
-    </MemoryRouter>
+    <ThemeProvider>
+      <MemoryRouter initialEntries={[`/?${url.toString()}`]}>
+        <App />
+      </MemoryRouter>
+    </ThemeProvider>
   );
 
   expect(await screen.findByText('Pikachu')).toBeInTheDocument();
