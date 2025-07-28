@@ -104,7 +104,7 @@ const BottomSection = ({
                     </button>
                   </li>
                   <li>
-                    <label>
+                    <label className={styles.fancyCheckbox}>
                       <input
                         type="checkbox"
                         checked={item.name in selectedItems}
@@ -120,7 +120,8 @@ const BottomSection = ({
                             })
                           )
                         }
-                      />{' '}
+                      />
+                      <span className={styles.checkboxCustom}></span>
                       Select
                     </label>
                   </li>

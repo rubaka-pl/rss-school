@@ -21,6 +21,7 @@ import DetailsData from './components/DetailsData/DetailsData';
 import type { DetailedResult } from './types/pokemon';
 
 import { useLocalStorage } from './hooks/useLocalStorage';
+import ThemeToggle from './components/ThemeToggle/ThemeToggle';
 
 const App = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -40,6 +41,7 @@ const App = () => {
   const page = getValidPageFromParams(searchParams);
   const offset = getOffsetFromPage(page, PAGE_SIZE);
   const totalPages = getTotalPages(count, PAGE_SIZE);
+
   useEffect(() => {
     if (detailsName) {
       fetchDetailedPokemonData(detailsName).then(setDetailsData);
@@ -140,6 +142,7 @@ const App = () => {
 
   return (
     <ErrorBoundary>
+      <ThemeToggle />
       <TopSection
         onReset={handleReset}
         loading={loading}

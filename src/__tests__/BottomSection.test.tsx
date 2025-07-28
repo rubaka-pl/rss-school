@@ -5,27 +5,43 @@ import { vi } from 'vitest';
 import BottomSection from '../components/BottomSection/BottomSection';
 import type { Result } from '../types/app';
 import { MemoryRouter } from 'react-router-dom';
+import { Provider } from 'react-redux';
+import { configureStore } from '@reduxjs/toolkit';
+import selectedItemsReducer from '../features/selectedItemsSlice';
+
+const renderWithProviders = (ui: React.ReactElement) => {
+  const store = configureStore({
+    reducer: {
+      selectedItems: selectedItemsReducer,
+    },
+  });
+
+  return render(
+    <Provider store={store}>
+      <MemoryRouter>{ui}</MemoryRouter>
+    </Provider>
+  );
+};
 
 describe('BottomSection', () => {
   const onResetButton = vi.fn();
   const onErrorButton = vi.fn();
   const mockSetSearchParams = vi.fn();
   const mockSearchParams = new URLSearchParams();
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it('renders empty state when results is empty', () => {
-    render(
-      <MemoryRouter>
-        <BottomSection
-          results={[]}
-          onResetButton={onResetButton}
-          onErrorButton={onErrorButton}
-          setSearchParams={mockSetSearchParams}
-          searchParams={mockSearchParams}
-        />
-      </MemoryRouter>
+    renderWithProviders(
+      <BottomSection
+        results={[]}
+        onResetButton={onResetButton}
+        onErrorButton={onErrorButton}
+        setSearchParams={mockSetSearchParams}
+        searchParams={mockSearchParams}
+      />
     );
 
     expect(screen.getByText('This is a Pokémon search.')).toBeInTheDocument();
@@ -48,16 +64,14 @@ describe('BottomSection', () => {
       },
     ];
 
-    render(
-      <MemoryRouter>
-        <BottomSection
-          results={results}
-          onResetButton={onResetButton}
-          onErrorButton={onErrorButton}
-          setSearchParams={mockSetSearchParams}
-          searchParams={mockSearchParams}
-        />
-      </MemoryRouter>
+    renderWithProviders(
+      <BottomSection
+        results={results}
+        onResetButton={onResetButton}
+        onErrorButton={onErrorButton}
+        setSearchParams={mockSetSearchParams}
+        searchParams={mockSearchParams}
+      />
     );
 
     const table = screen.getByRole('table');
@@ -78,20 +92,17 @@ describe('BottomSection', () => {
   });
 
   it('always shows Reset Search and Throw Error buttons and responds to clicks', async () => {
-    render(
-      <MemoryRouter>
-        <BottomSection
-          results={[]}
-          onResetButton={onResetButton}
-          onErrorButton={onErrorButton}
-          setSearchParams={mockSetSearchParams}
-          searchParams={mockSearchParams}
-        />
-      </MemoryRouter>
+    renderWithProviders(
+      <BottomSection
+        results={[]}
+        onResetButton={onResetButton}
+        onErrorButton={onErrorButton}
+        setSearchParams={mockSetSearchParams}
+        searchParams={mockSearchParams}
+      />
     );
 
     const resetBtn = screen.getByRole('button', { name: /reset search/i });
-
     expect(resetBtn).toBeEnabled();
 
     await userEvent.click(resetBtn);

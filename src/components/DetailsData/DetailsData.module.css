@@ -14,7 +14,7 @@
 }
 
 .modal {
-  background: #1e1e1e;
+  background: var(--bg-color);
   padding: 2rem;
   border-radius: 16px;
   width: 90%;
@@ -22,6 +22,7 @@
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
   position: relative;
   animation: popIn 0.3s ease-out;
+  color: var(--text-color);
 }
 
 .closeButton {

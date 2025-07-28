@@ -11,6 +11,8 @@ import NotFoundPage from './pages/NotFoundPage/NotFoundPage';
 import './index.css';
 import GlowCursor from './components/Cursor/Cursor';
 
+import { ThemeProvider } from './context/ThemeContext';
+
 const rootEl = document.getElementById('root');
 if (!rootEl) throw new Error('Root element not found');
 
@@ -18,13 +20,15 @@ createRoot(rootEl).render(
   <StrictMode>
     <GlowCursor />
     <Provider store={store}>
-      <BrowserRouter basename="/rss-school">
-        <Routes>
-          <Route path="/" element={<App />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-      </BrowserRouter>
+      <ThemeProvider>
+        <BrowserRouter basename="/rss-school">
+          <Routes>
+            <Route path="/" element={<App />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </BrowserRouter>
+      </ThemeProvider>
     </Provider>
   </StrictMode>
 );
