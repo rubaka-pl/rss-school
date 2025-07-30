@@ -1,16 +1,15 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import styles from './Cursor.module.css';
 
 const GlowCursor = () => {
-  useEffect(() => {
-    const cursor = document.querySelector(
-      `.${styles.cursorGlow}`
-    ) as HTMLDivElement | null;
-    if (!cursor) return;
+  const cursorRef = useRef<HTMLDivElement | null>(null);
 
+  useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      cursor.style.left = `${e.clientX}px`;
-      cursor.style.top = `${e.clientY + 16}px`;
+      if (cursorRef.current) {
+        cursorRef.current.style.left = `${e.clientX}px`;
+        cursorRef.current.style.top = `${e.clientY + 16}px`;
+      }
     };
 
     document.addEventListener('mousemove', handleMouseMove);
@@ -20,7 +19,7 @@ const GlowCursor = () => {
     };
   }, []);
 
-  return <div className={styles.cursorGlow} />;
+  return <div ref={cursorRef} className={styles.cursorGlow} />;
 };
 
 export default GlowCursor;

@@ -33,7 +33,7 @@
 
 body {
   cursor:
-    url('/cursor.cur') 16 16,
+    url('/cursor.cur') 12 12,
     auto;
   font-family: 'Press Start 2P', monospace;
 }
