@@ -1,0 +1,39 @@
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-family: 'Segoe UI', sans-serif;
+  line-height: 1.6;
+  color: white;
+}
+
+.container h1 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.container a {
+  color: #3498db;
+  text-decoration: none;
+}
+
+.container a:hover {
+  text-decoration: underline;
+}
+
+.container ul {
+  padding-left: 1.5rem;
+  list-style-type: disc;
+  margin-bottom: 1.5rem;
+}
+.author {
+  font-size: 2rem;
+  font-weight: bold;
+  text-align: center;
+  margin-top: 3rem;
+  cursor: pointer;
+}
+ul,
+li {
+  list-style: none;
+}

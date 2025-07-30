@@ -1,158 +1,192 @@
-import React from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import {
+  getValidPageFromParams,
+  getOffsetFromPage,
+  getTotalPages,
+} from './utilities/paginationUtils';
 import TopSection from './components/TopSection/TopSection';
 import BottomSection from './components/BottomSection/BottomSection';
-import type { AppState } from './types/app';
-import {
-  fetchPage,
-  fetchPokemonList,
-  fetchFullPokemonDataByName,
-} from './api/pokemonApi';
-import { isError } from './utilities/typeGuards';
-import GlowCursor from './components/Cursor/Cursor';
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
 import BuggyBottom from './components/BuggyBottom/BuggyBottom';
-import { PAGE_SIZE } from './utilities/constants';
 import Pagination from './components/Pagination/Pagination';
-import { normalizeSearchTerm } from '../src/utilities/stringUtils';
-export default class App extends React.Component<object, AppState> {
-  state: AppState = {
-    results: [],
-    loading: false,
-    errorMessage: null,
-    offset: 0,
-    count: 0,
-    searchTerm: localStorage.getItem('searchTerm') || '',
-    showBuggyComponent: false,
-    pokemonNames: [],
-  };
 
-  async componentDidMount() {
-    try {
-      const pokemonNames = await fetchPokemonList();
-      this.setState({ pokemonNames });
-    } catch (error) {
-      console.error('Failed to load pokemon list:', error);
-      this.setState({ errorMessage: 'Failed to load pokemon list' });
-    }
+import { fetchPage, fetchPokemonList } from './api/pokemonApi';
+import { fetchDetailedPokemonData } from './api/pokemonDetailed';
+import { normalizeSearchTerm } from './utilities/stringUtils';
+import { isError } from './utilities/typeGuards';
+import { PAGE_SIZE } from './utilities/constants';
+import type { Result } from './types/app';
+import DetailsData from './components/DetailsData/DetailsData';
+import type { DetailedResult } from './types/pokemon';
 
-    if (this.state.searchTerm) {
-      this.handleSearch(this.state.searchTerm);
+import { useLocalStorage } from './hooks/useLocalStorage';
+
+const App = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [results, setResults] = useState<Result[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [count, setCount] = useState(0);
+  const [pokemonNames, setPokemonNames] = useState<string[]>([]);
+  const [searchTerm, setSearchTerm, clearSearchTerm] = useLocalStorage<string>(
+    'searchTerm',
+    ''
+  );
+  const [showBuggyComponent, setShowBuggyComponent] = useState(false);
+  const detailsName = searchParams.get('details');
+  const [detailsData, setDetailsData] = useState<DetailedResult | null>(null);
+
+  const page = getValidPageFromParams(searchParams);
+  const offset = getOffsetFromPage(page, PAGE_SIZE);
+  const totalPages = getTotalPages(count, PAGE_SIZE);
+  useEffect(() => {
+    if (detailsName) {
+      fetchDetailedPokemonData(detailsName).then(setDetailsData);
     } else {
-      this.loadPage(0);
+      setDetailsData(null);
     }
-  }
+  }, [detailsName]);
 
-  handleSearch = async (term: string) => {
+  useEffect(() => {
+    const init = async () => {
+      try {
+        const names = await fetchPokemonList();
+        setPokemonNames(names);
+
+        if (searchTerm) {
+          await handleSearch(searchTerm);
+        } else {
+          await loadPageByPageNumber(page);
+        }
+      } catch (error) {
+        console.error('Failed to initialize:', error);
+        setErrorMessage('Failed to initialize Pokédex');
+      }
+    };
+
+    init();
+  }, []);
+
+  const handleSearch = async (term: string) => {
     const query = normalizeSearchTerm(term);
-    this.setState({ loading: true, errorMessage: null, searchTerm: query });
-    localStorage.setItem('searchTerm', query);
+    setLoading(true);
+    setErrorMessage(null);
+    setSearchTerm(query);
+    setSearchParams({});
 
     if (!query) {
-      return this.loadPage(0);
+      await loadPage(0);
+      return;
     }
 
-    const filteredNames = this.state.pokemonNames.filter((name) =>
-      name.includes(query)
-    );
+    const filteredNames = pokemonNames.filter((name) => name.includes(query));
 
     try {
       const fullData = await Promise.all(
-        filteredNames.map((name) => fetchFullPokemonDataByName(name))
+        filteredNames.map((name) => fetchDetailedPokemonData(name))
       );
-      this.setState({
-        results: fullData,
-        count: filteredNames.length,
-        offset: 0,
-      });
+      setResults(fullData);
+      setCount(filteredNames.length);
     } catch (error) {
       console.error('Search failed:', error);
       const msg = isError(error)
-        ? `Failed to load some Pokémon`
+        ? 'Failed to load some Pokémon'
         : 'Unknown error occurred';
-      this.setState({
-        errorMessage: msg,
-        results: [],
-      });
+      setErrorMessage(msg);
+      setResults([]);
     } finally {
-      this.setState({ loading: false });
+      setLoading(false);
     }
   };
-
-  loadPage = async (offset: number) => {
-    this.setState({ loading: true, errorMessage: null });
+  const loadPage = async (offset: number) => {
+    setLoading(true);
+    setErrorMessage(null);
 
     try {
       const { results, count } = await fetchPage(offset);
-      this.setState({ results, count, offset });
-    } catch (error) {
-      this.setState({
-        errorMessage: isError(error) ? error.message : 'Unknown error occurred',
-        results: [],
+      const currentPage = Math.floor(offset / PAGE_SIZE) + 1;
+      const totalPages = getTotalPages(count, PAGE_SIZE);
+
+      setResults(results);
+      setCount(count);
+
+      setSearchParams({
+        page: String(Math.min(currentPage, totalPages)),
       });
+    } catch (error) {
+      setErrorMessage(
+        isError(error) ? error.message : 'Unknown error occurred'
+      );
+      setResults([]);
     } finally {
-      this.setState({ loading: false });
+      setLoading(false);
     }
   };
-
-  handleReset = () => {
-    this.setState({ searchTerm: '' });
-    localStorage.removeItem('searchTerm');
-    this.loadPage(0);
+  const loadPageByPageNumber = async (pageNumber: number) => {
+    const newOffset = (pageNumber - 1) * PAGE_SIZE;
+    await loadPage(newOffset);
   };
 
-  handleError = () => {
-    this.setState({ showBuggyComponent: true });
+  const handleReset = () => {
+    clearSearchTerm();
+    setSearchParams({ page: '1' });
+    loadPage(0);
   };
 
-  render() {
-    const {
-      results,
-      loading,
-      errorMessage,
-      offset,
-      count,
-      searchTerm,
-      showBuggyComponent,
-    } = this.state;
+  const handleError = () => {
+    setShowBuggyComponent(true);
+  };
 
-    const totalPages = Math.ceil(count / PAGE_SIZE);
+  return (
+    <ErrorBoundary>
+      <TopSection
+        onReset={handleReset}
+        loading={loading}
+        onSearch={handleSearch}
+        onError={handleError}
+      />
 
-    return (
-      <>
+      {loading ? (
+        <p>Loading…</p>
+      ) : errorMessage ? (
+        <p className="error-message">{errorMessage}</p>
+      ) : (
         <ErrorBoundary>
-          <GlowCursor />
-          <TopSection loading={loading} onSearch={this.handleSearch} />
-
-          {loading ? (
-            <p>Loading…</p>
-          ) : errorMessage ? (
-            <p className="error-message">{errorMessage}</p>
+          {showBuggyComponent ? (
+            <BuggyBottom />
           ) : (
-            <ErrorBoundary>
-              {showBuggyComponent ? (
-                <BuggyBottom />
-              ) : (
-                <>
-                  <BottomSection
-                    results={results}
-                    onResetButton={this.handleReset}
-                    onErrorButton={this.handleError}
-                  />
-
-                  {!searchTerm && totalPages > 1 && (
-                    <Pagination
-                      offset={offset}
-                      total={count}
-                      pageSize={PAGE_SIZE}
-                      onPageChange={this.loadPage}
-                    />
-                  )}
-                </>
+            <>
+              <BottomSection
+                results={results}
+                onResetButton={handleReset}
+                onErrorButton={handleError}
+                searchParams={searchParams}
+                setSearchParams={setSearchParams}
+              />
+              {detailsData && (
+                <DetailsData
+                  data={detailsData}
+                  onClose={() => {
+                    searchParams.delete('details');
+                    setSearchParams(searchParams);
+                  }}
+                />
               )}
-            </ErrorBoundary>
+              {!searchTerm && totalPages > 1 && (
+                <Pagination
+                  offset={offset}
+                  total={count}
+                  pageSize={PAGE_SIZE}
+                  onPageChange={loadPage}
+                />
+              )}
+            </>
           )}
         </ErrorBoundary>
-      </>
-    );
-  }
-}
+      )}
+    </ErrorBoundary>
+  );
+};
+
+export default App;
