@@ -11,7 +11,7 @@ const Pagination = ({
   const currentPage = Math.floor(offset / pageSize) + 1;
 
   return (
-    <div className={styles.controls}>
+    <div className={styles.controls} data-testid="pager">
       <button
         className={styles.button}
         onClick={() => onPageChange(offset - pageSize)}
