@@ -13,7 +13,7 @@ import {
 import type { Result } from '../types/app';
 import { useLocalStorage } from './useLocalStorage';
 
-export const usePokemonSearch = () => {
+export const usePokemonSearch = (clearDetails: () => void) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [results, setResults] = useState<Result[]>([]);
   const [count, setCount] = useState(0);
@@ -49,7 +49,7 @@ export const usePokemonSearch = () => {
   }, []);
 
   useEffect(() => {
-    if (!searchTerm && results.length === 0) {
+    if (searchTerm === '') {
       loadPageByPageNumber(page);
     }
   }, [searchParams]);
@@ -59,8 +59,16 @@ export const usePokemonSearch = () => {
     setLoading(true);
     setErrorMessage(null);
     setSearchTerm(query);
-    setSearchParams({});
-
+    setSearchParams(
+      (prev) => {
+        const params = new URLSearchParams(prev);
+        params.delete('search');
+        params.delete('details');
+        params.set('page', '1');
+        return params;
+      },
+      { replace: true }
+    );
     if (!query) {
       await loadPage(0);
       return;
@@ -91,10 +99,13 @@ export const usePokemonSearch = () => {
     try {
       const { results, count } = await fetchPage(offset);
       const currentPage = Math.floor(offset / PAGE_SIZE) + 1;
-      const totalPages = getTotalPages(count, PAGE_SIZE);
       setResults(results);
       setCount(count);
-      setSearchParams({ page: String(Math.min(currentPage, totalPages)) });
+      setSearchParams((prev) => {
+        const newParams = new URLSearchParams(prev);
+        newParams.set('page', String(currentPage));
+        return newParams;
+      });
     } catch (error) {
       setErrorMessage(
         isError(error) ? error.message : 'Unknown error occurred'
@@ -112,7 +123,16 @@ export const usePokemonSearch = () => {
 
   const handleReset = () => {
     clearSearchTerm();
-    setSearchParams({ page: '1' });
+    clearDetails();
+    setSearchParams(
+      (prev) => {
+        const params = new URLSearchParams(prev);
+        params.delete('search');
+        params.set('page', '1');
+        return params;
+      },
+      { replace: true }
+    );
     loadPage(0);
   };
 

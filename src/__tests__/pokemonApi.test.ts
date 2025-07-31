@@ -4,7 +4,6 @@ import type { Result } from '../types/app';
 import {
   fetchPokemonList,
   fetchPage,
-  fetchFullPokemonData,
   fetchFullPokemonDataByName,
 } from '../api/pokemonApi';
 import { PAGE_SIZE } from '../utilities/constants';
@@ -95,7 +94,7 @@ describe('pokemonApi', () => {
     const fetchMock = fetch as MockedFunction<typeof fetch>;
     fetchMock.mockResolvedValue({ ok: false, status: 500 } as Response);
 
-    await expect(fetchFullPokemonData('x', 'url')).rejects.toThrow(
+    await expect(fetchFullPokemonDataByName('x')).rejects.toThrow(
       'Failed to fetch x: 500'
     );
   });
@@ -118,7 +117,7 @@ describe('pokemonApi', () => {
       } as Response)
       .mockResolvedValueOnce({ ok: false, status: 404 } as Response);
 
-    await expect(fetchFullPokemonData('x', 'u')).rejects.toThrow(
+    await expect(fetchFullPokemonDataByName('x')).rejects.toThrow(
       'Failed to fetch species for x'
     );
   });
@@ -149,7 +148,7 @@ describe('pokemonApi', () => {
         json: async () => speciesData,
       } as Response);
 
-    const result = await fetchFullPokemonData('name', 'url');
+    const result = await fetchFullPokemonDataByName('name');
     expect(normalizeFlavorText).toHaveBeenCalledWith(' raw \n text ');
     expect(result).toEqual({
       name: 'name',

@@ -13,20 +13,23 @@ import { PAGE_SIZE } from './utilities/constants';
 
 const App = () => {
   const [showBuggyComponent, setShowBuggyComponent] = useState(false);
-  const {
-    searchTerm,
-    handleSearch,
-    handleReset,
-    loading,
-    errorMessage,
-    results,
-    count,
-    offset,
-    totalPages,
-    setSearchParams,
-    searchParams,
-  } = usePokemonSearch();
-  const { detailsData, clearDetails } = usePokemonDetails();
+
+    const { detailsData, clearDetails } = usePokemonDetails();
+
+    const {
+      searchTerm,
+      handleSearch,
+      handleReset,
+      loading,
+      errorMessage,
+      results,
+      count,
+      offset,
+      totalPages,
+      setSearchParams,
+      searchParams,
+    } = usePokemonSearch(clearDetails);
+
 
   const handleError = () => setShowBuggyComponent(true);
 
@@ -66,7 +69,11 @@ const App = () => {
                   pageSize={PAGE_SIZE}
                   onPageChange={(offset) => {
                     const newPage = Math.floor(offset / PAGE_SIZE) + 1;
-                    setSearchParams({ page: newPage.toString() });
+                    setSearchParams((prev) => {
+                      const newParams = new URLSearchParams(prev);
+                      newParams.set('page', newPage.toString());
+                      return newParams;
+                    });
                   }}
                 />
               )}

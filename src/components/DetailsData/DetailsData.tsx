@@ -3,7 +3,7 @@ import type { PropsDetails } from '../../types/app';
 
 const DetailsData = ({ data, onClose }: PropsDetails) => {
   return (
-    <div className={styles.backdrop}>
+    <div>
       <div className={styles.modal}>
         <button className={styles.closeButton} onClick={onClose}>
           ✖

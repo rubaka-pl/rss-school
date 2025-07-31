@@ -93,6 +93,7 @@ const BottomSection = ({
                   </li>
                   <li>
                     <button
+                      type="button"
                       className={styles.detailsLink}
                       onClick={() => {
                         const newParams = new URLSearchParams(searchParams);
