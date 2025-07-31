@@ -49,7 +49,7 @@ export const usePokemonSearch = () => {
   }, []);
 
   useEffect(() => {
-    if (!searchTerm) {
+    if (!searchTerm && results.length === 0) {
       loadPageByPageNumber(page);
     }
   }, [searchParams]);

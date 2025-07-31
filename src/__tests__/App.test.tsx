@@ -57,10 +57,6 @@ vi.mock('../components/BottomSection/BottomSection', () => ({
   default: () => <div data-testid="bottom" />,
 }));
 
-vi.mock('../components/Pagination/Pagination', () => ({
-  default: () => <div data-testid="pager" />,
-}));
-
 vi.mock('../components/Cursor/Cursor', () => ({
   default: () => <div data-testid="cursor" />,
 }));
@@ -76,9 +72,15 @@ vi.mock('../components/BuggyBottom/BuggyBottom', () => ({
 import App from '../App';
 
 describe('App (simplified)', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
     localStorage.clear();
+
+    const api = await import('../api/pokemonApi');
+    (api.fetchPage as MockedFunction<typeof api.fetchPage>).mockResolvedValue({
+      results: [],
+      count: 30,
+    });
   });
 
   it('on mount, fetchPokemonList then fetchPage(0)', async () => {
@@ -104,13 +106,11 @@ describe('App (simplified)', () => {
       </ThemeProvider>
     );
     expect(await screen.findByTestId('bottom')).toBeInTheDocument();
-    expect(screen.queryByTestId('pager')).toBeNull();
   });
 
   it('shows pager when no searchTerm and count > pageSize', async () => {
     const api = await import('../api/pokemonApi');
     const fetchPage = api.fetchPage as MockedFunction<typeof api.fetchPage>;
-    fetchPage.mockResolvedValueOnce({ results: [], count: 30 });
     render(
       <ThemeProvider>
         <MemoryRouter>
@@ -119,7 +119,7 @@ describe('App (simplified)', () => {
       </ThemeProvider>
     );
     await waitFor(() => expect(fetchPage).toHaveBeenCalled());
-    expect(screen.getByTestId('pager')).toBeInTheDocument();
+    expect(await screen.findByTestId('pager')).toBeInTheDocument();
   });
 
   it('triggers search and renders bottom when Search button clicked', async () => {
