@@ -1,4 +1,3 @@
-// hooks/usePokemonSearch.ts
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { fetchPage, fetchPokemonList } from '../api/pokemonApi';
@@ -48,6 +47,12 @@ export const usePokemonSearch = () => {
 
     init();
   }, []);
+
+  useEffect(() => {
+    if (!searchTerm) {
+      loadPageByPageNumber(page);
+    }
+  }, [searchParams]);
 
   const handleSearch = async (term: string) => {
     const query = normalizeSearchTerm(term);

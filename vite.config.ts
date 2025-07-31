@@ -25,6 +25,7 @@ export default defineConfig({
         'src/utilities/typeGuards.ts',
         'src/pages/NotFoundPage.tsx',
         'src/pages/AboutPage.tsx',
+        'dist',
         'dist/assets/index-9SjB-Tnq.js',
         'dist/assets/index-BXOTJwkR.js',
       ],
