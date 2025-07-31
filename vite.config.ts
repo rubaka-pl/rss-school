@@ -26,6 +26,7 @@ export default defineConfig({
         'src/pages/NotFoundPage.tsx',
         'src/pages/AboutPage.tsx',
         'dist/assets/index-9SjB-Tnq.js',
+        'dist/assets/index-BXOTJwkR.js',
       ],
     },
   },
