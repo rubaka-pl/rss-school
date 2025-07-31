@@ -1,10 +1,9 @@
-/* TOP SECTION START */
 .topSection {
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 20px;
-  background: #121212;
+  background: var(--bg-color-gray);
 }
 
 .app-container {
@@ -63,4 +62,9 @@
   max-width: 70%;
 }
 
-/* TOP SECTION END */
+@media screen and (max-width: 600px) {
+  .logo {
+    height: 7.1em;
+    padding: 2.5em;
+  }
+}

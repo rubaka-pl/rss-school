@@ -1,0 +1,78 @@
+.images img {
+  width: 50%;
+}
+.modal {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 360px;
+  background: var(--bg-color);
+  padding: 2rem;
+  border-left: 2px solid #333;
+  box-shadow: -4px 0 16px rgba(0, 0, 0, 0.4);
+  overflow-y: auto;
+  z-index: 1000;
+  animation: slideIn 0.3s ease-out;
+  pointer-events: auto;
+}
+
+.closeButton {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text-color);
+}
+.sprite {
+  width: 96px;
+  height: 96px;
+  margin: 1rem auto;
+  display: block;
+  animation: bounce 1s ease infinite alternate;
+}
+
+.stats {
+  margin-top: 1rem;
+  padding-left: 1.2rem;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes popIn {
+  0% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes bounce {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-6px);
+  }
+}
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0%);
+  }
+}

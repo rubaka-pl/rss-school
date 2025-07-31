@@ -1,3 +1,5 @@
+import type { SetURLSearchParams } from 'react-router-dom';
+import type { DetailedResult } from './pokemon';
 export interface Result {
   name: string;
   description: string;
@@ -27,6 +29,8 @@ export interface TopSectionState {
 export interface TopSectionProps {
   onSearch(term: string): void;
   loading: boolean;
+  onReset: () => void;
+  onError: () => void;
 }
 
 export interface ButtonProps {
@@ -38,6 +42,8 @@ export interface BottomSectionProps {
   results: Result[];
   onErrorButton(): void;
   onResetButton(): void;
+  setSearchParams: SetURLSearchParams;
+  searchParams: URLSearchParams;
 }
 
 export interface ErrorBoundaryState {
@@ -63,4 +69,17 @@ export interface PaginationProps {
 export interface SearchProps {
   onResults(results: Result[], count: number, offset: number): void;
   pageSize: number;
+}
+export interface PropsDetails {
+  data: DetailedResult;
+  onClose: () => void;
+}
+export interface SelectedItem {
+  id: string;
+  name: string;
+  description: string;
+  detailsUrl: string;
+}
+export interface State {
+  items: Record<string, SelectedItem>;
 }
