@@ -69,7 +69,7 @@ vi.mock('../components/BuggyBottom/BuggyBottom', () => ({
   default: () => <div data-testid="buggy" />,
 }));
 
-import App from '../App';
+import HomePage from '../pages/HomePage/HomePage';
 
 describe('App (simplified)', () => {
   beforeEach(async () => {
@@ -86,8 +86,8 @@ describe('App (simplified)', () => {
   it('on mount, fetchPokemonList then fetchPage(0)', async () => {
     render(
       <ThemeProvider>
-        <MemoryRouter>
-          <App />
+        <MemoryRouter initialEntries={['/']}>
+          <HomePage />
         </MemoryRouter>
       </ThemeProvider>
     );
@@ -100,8 +100,8 @@ describe('App (simplified)', () => {
     localStorage.setItem('searchTerm', 'pikachu');
     render(
       <ThemeProvider>
-        <MemoryRouter>
-          <App />
+        <MemoryRouter initialEntries={['/']}>
+          <HomePage />
         </MemoryRouter>
       </ThemeProvider>
     );
@@ -113,8 +113,8 @@ describe('App (simplified)', () => {
     const fetchPage = api.fetchPage as MockedFunction<typeof api.fetchPage>;
     render(
       <ThemeProvider>
-        <MemoryRouter>
-          <App />
+        <MemoryRouter initialEntries={['/']}>
+          <HomePage />
         </MemoryRouter>
       </ThemeProvider>
     );
@@ -126,8 +126,8 @@ describe('App (simplified)', () => {
     const { fetchDetailedPokemonData } = await import('../api/pokemonDetailed');
     render(
       <ThemeProvider>
-        <MemoryRouter>
-          <App />
+        <MemoryRouter initialEntries={['/']}>
+          <HomePage />
         </MemoryRouter>
       </ThemeProvider>
     );
@@ -140,8 +140,8 @@ describe('App (simplified)', () => {
 it('shows BuggyBottom when onErrorButton is triggered', async () => {
   render(
     <ThemeProvider>
-      <MemoryRouter>
-        <App />
+      <MemoryRouter initialEntries={['/']}>
+        <HomePage />
       </MemoryRouter>
     </ThemeProvider>
   );
@@ -157,14 +157,16 @@ it('loads and renders DetailsData when ?details param is present', async () => {
   render(
     <ThemeProvider>
       <MemoryRouter initialEntries={[`/?${url.toString()}`]}>
-        <App />
+        <HomePage />
       </MemoryRouter>
     </ThemeProvider>
   );
 
-  expect(await screen.findByText('Pikachu')).toBeInTheDocument();
+  expect(
+    await screen.findByText((text) => text.includes('Pikachu'))
+  ).toBeInTheDocument();
 
   const closeBtn = screen.getByRole('button', { name: /✖/ });
   await userEvent.click(closeBtn);
-  expect(screen.queryByText('Pikachu')).not.toBeInTheDocument();
+  expect(screen.queryByText(/Pikachu/)).not.toBeInTheDocument();
 });
