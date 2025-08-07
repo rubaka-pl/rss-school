@@ -3,7 +3,7 @@ import Logo from '../../assets/logo.svg';
 import styles from './TopSection.module.css';
 import SearchInput from '../SearchInput/SearchInput';
 import Loader from '../Loader/Loader';
-import { fetchPokemonList } from '../../api/pokemonApi';
+import { useGetAllPokemonNamesQuery } from '../../api/pokemonApi';
 import type { TopSectionProps } from '../../types/app';
 
 const useLocalStorageState = (key: string, defaultValue: string) => {
@@ -18,18 +18,11 @@ const useLocalStorageState = (key: string, defaultValue: string) => {
   return [value, setValue] as const;
 };
 
-const TopSection = ({ onSearch, loading, onReset }: TopSectionProps) => {
+  const TopSection = ({ onSearch, loading, onReset }: TopSectionProps) => {
+  const { data: allNames = [], isLoading } = useGetAllPokemonNamesQuery();
   const [searchTerm, setSearchTerm] = useLocalStorageState('searchTerm', '');
   const [suggestions, setSuggestions] = useState<string[]>([]);
-  const [allNames, setAllNames] = useState<string[]>([]);
 
-  useEffect(() => {
-    const fetchNames = async () => {
-      const names = await fetchPokemonList();
-      setAllNames(names);
-    };
-    fetchNames();
-  }, []);
 
   const handleChange = useCallback(
     (term: string) => {
@@ -63,7 +56,8 @@ const TopSection = ({ onSearch, loading, onReset }: TopSectionProps) => {
   };
   return (
     <header className={styles.topSection}>
-      {loading ? (
+      
+      {(loading || isLoading) ? (
         <Loader />
       ) : (
         <img

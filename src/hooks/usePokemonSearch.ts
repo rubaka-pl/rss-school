@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { fetchPage, fetchPokemonList } from '../api/pokemonApi';
+import { useGetPokemonPageQuery, useGetAllPokemonNamesQuery } from '../api/pokemonApi';
 import { fetchDetailedPokemonData } from '../api/pokemonDetailed';
 import { normalizeSearchTerm } from '../utilities/stringUtils';
 import { isError } from '../utilities/typeGuards';
@@ -17,124 +17,105 @@ export const usePokemonSearch = (clearDetails: () => void) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [results, setResults] = useState<Result[]>([]);
   const [count, setCount] = useState(0);
-  const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [pokemonNames, setPokemonNames] = useState<string[]>([]);
   const [searchTerm, setSearchTerm, clearSearchTerm] = useLocalStorage<string>(
     'searchTerm',
     ''
   );
+  const [searchLoading, setSearchLoading] = useState(false);
 
   const page = getValidPageFromParams(searchParams);
   const offset = getOffsetFromPage(page, PAGE_SIZE);
   const totalPages = getTotalPages(count, PAGE_SIZE);
 
-  useEffect(() => {
-    const init = async () => {
-      try {
-        const names = await fetchPokemonList();
-        setPokemonNames(names);
-        if (searchTerm) {
-          await handleSearch(searchTerm);
-        } else {
-          await loadPageByPageNumber(page);
-        }
-      } catch (error) {
-        console.error(error);
-        setErrorMessage('Failed to initialize Pokédex');
-      }
-    };
+  const {
+    data: pageData,
+    error: pageError,
+    isLoading: pageLoading,
+    refetch: refetchPage,
+  } = useGetPokemonPageQuery(offset, {
+    skip: !!searchTerm,
+  });
 
-    init();
-  }, []);
+  const {
+    data: allNames = [],
+    error: namesError,
+    isLoading: namesLoading,
+  } = useGetAllPokemonNamesQuery();
 
   useEffect(() => {
-    if (searchTerm === '') {
-      loadPageByPageNumber(page);
+    if (pageData) {
+      setResults(pageData.results);
+      setCount(pageData.count);
     }
-  }, [searchParams]);
+  }, [pageData]);
+
+  useEffect(() => {
+    if (pageError || namesError) {
+      setErrorMessage('Error loading Pokédex data');
+    } else {
+      setErrorMessage(null);
+    }
+  }, [pageError, namesError]);
 
   const handleSearch = async (term: string) => {
+    clearDetails();
     const query = normalizeSearchTerm(term);
-    setLoading(true);
-    setErrorMessage(null);
     setSearchTerm(query);
-    setSearchParams(
-      (prev) => {
-        const params = new URLSearchParams(prev);
-        params.delete('search');
-        params.delete('details');
-        params.set('page', '1');
-        return params;
-      },
-      { replace: true }
-    );
+    setErrorMessage(null);
+
     if (!query) {
-      await loadPage(0);
+      setResults([]);
+      setCount(0);
+      setSearchParams({ page: '1' });
+      refetchPage();
       return;
     }
 
-    const filteredNames = pokemonNames.filter((name) => name.includes(query));
+    if (!allNames.length) {
+      setErrorMessage('Pokémon list is not loaded yet');
+      return;
+    }
+
+    const filteredNames = allNames.filter((name) => name.includes(query));
+
+    if (filteredNames.length === 0) {
+      setResults([]);
+      setCount(0);
+      setErrorMessage('Pokémon not found');
+      return;
+    }
+
+    setResults([]);
+    setCount(filteredNames.length);
+    setSearchLoading(true);
 
     try {
       const fullData = await Promise.all(
         filteredNames.map((name) => fetchDetailedPokemonData(name))
       );
       setResults(fullData);
-      setCount(filteredNames.length);
     } catch (error) {
       const msg = isError(error)
-        ? 'Failed to load some Pokémon'
+        ? 'Error loading Pokémon data'
         : 'Unknown error occurred';
       setErrorMessage(msg);
       setResults([]);
+      setCount(0);
     } finally {
-      setLoading(false);
+      setSearchLoading(false);
     }
-  };
-
-  const loadPage = async (offset: number) => {
-    setLoading(true);
-    setErrorMessage(null);
-    try {
-      const { results, count } = await fetchPage(offset);
-      const currentPage = Math.floor(offset / PAGE_SIZE) + 1;
-      setResults(results);
-      setCount(count);
-      setSearchParams((prev) => {
-        const newParams = new URLSearchParams(prev);
-        newParams.set('page', String(currentPage));
-        return newParams;
-      });
-    } catch (error) {
-      setErrorMessage(
-        isError(error) ? error.message : 'Unknown error occurred'
-      );
-      setResults([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadPageByPageNumber = async (pageNumber: number) => {
-    const newOffset = (pageNumber - 1) * PAGE_SIZE;
-    await loadPage(newOffset);
   };
 
   const handleReset = () => {
     clearSearchTerm();
     clearDetails();
-    setSearchParams(
-      (prev) => {
-        const params = new URLSearchParams(prev);
-        params.delete('search');
-        params.set('page', '1');
-        return params;
-      },
-      { replace: true }
-    );
-    loadPage(0);
+    setSearchParams({ page: '1' });
+    setErrorMessage(null);
+    refetchPage();
   };
+
+  const loading = pageLoading || namesLoading || searchLoading;
 
   return {
     searchTerm,
