@@ -4,13 +4,14 @@ import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../../store/store';
 import { toggleItem, clearSelection } from '../../features/selectedItemsSlice';
-
 const BottomSection = ({
   results,
   onResetButton,
   searchParams,
   setSearchParams,
-}: BottomSectionProps) => {
+  onRefresh,
+  isRefreshing,
+}: BottomSectionProps & { onRefresh: () => void }) => {
   const selectedItems = useSelector(
     (state: RootState) => state.selectedItems.items
   );
@@ -158,6 +159,14 @@ const BottomSection = ({
       )}
 
       <div className={styles.controls}>
+        <button
+          onClick={onRefresh}
+          disabled={isRefreshing}
+          className={isRefreshing ? styles.refreshing : ''}
+        >
+          {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
+        </button>
+
         <button className={styles.resetButton} onClick={onResetButton}>
           Reset Search
         </button>

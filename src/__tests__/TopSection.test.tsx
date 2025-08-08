@@ -5,7 +5,11 @@ import { vi } from 'vitest';
 import TopSection from '../components/TopSection/TopSection';
 
 vi.mock('../api/pokemonApi', () => ({
-  fetchPokemonList: vi.fn().mockResolvedValue(['pikachu', 'charmander']),
+  useGetAllPokemonNamesQuery: vi.fn(() => ({
+    data: ['pikachu', 'charmander'],
+    isLoading: false,
+    isError: false,
+  })),
 }));
 
 vi.mock('../assets/logo.svg', () => ({ default: 'logo.svg' }));

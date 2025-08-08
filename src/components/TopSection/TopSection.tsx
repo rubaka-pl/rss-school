@@ -18,11 +18,11 @@ const useLocalStorageState = (key: string, defaultValue: string) => {
   return [value, setValue] as const;
 };
 
-  const TopSection = ({ onSearch, loading, onReset }: TopSectionProps) => {
-  const { data: allNames = [], isLoading } = useGetAllPokemonNamesQuery();
+const TopSection = ({ onSearch, loading, onReset }: TopSectionProps) => {
+  const { data: allNames = [], isLoading } =
+    useGetAllPokemonNamesQuery(undefined);
   const [searchTerm, setSearchTerm] = useLocalStorageState('searchTerm', '');
   const [suggestions, setSuggestions] = useState<string[]>([]);
-
 
   const handleChange = useCallback(
     (term: string) => {
@@ -56,8 +56,7 @@ const useLocalStorageState = (key: string, defaultValue: string) => {
   };
   return (
     <header className={styles.topSection}>
-      
-      {(loading || isLoading) ? (
+      {loading || isLoading ? (
         <Loader />
       ) : (
         <img

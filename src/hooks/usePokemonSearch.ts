@@ -1,7 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useGetPokemonPageQuery, useGetAllPokemonNamesQuery } from '../api/pokemonApi';
-import { fetchDetailedPokemonData } from '../api/pokemonDetailed';
+import { useDispatch } from 'react-redux';
+import type { AppDispatch } from '../store/store';
+import {
+  useGetPokemonPageQuery,
+  useGetAllPokemonNamesQuery,
+  pokemonApi,
+} from '../api/pokemonApi';
 import { normalizeSearchTerm } from '../utilities/stringUtils';
 import { isError } from '../utilities/typeGuards';
 import { PAGE_SIZE } from '../utilities/constants';
@@ -18,11 +23,9 @@ export const usePokemonSearch = (clearDetails: () => void) => {
   const [results, setResults] = useState<Result[]>([]);
   const [count, setCount] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm, clearSearchTerm] = useLocalStorage<string>(
-    'searchTerm',
-    ''
-  );
+  const [searchTerm, setSearchTerm] = useLocalStorage<string>('searchTerm', '');
   const [searchLoading, setSearchLoading] = useState(false);
+  const dispatch = useDispatch<AppDispatch>();
 
   const page = getValidPageFromParams(searchParams);
   const offset = getOffsetFromPage(page, PAGE_SIZE);
@@ -41,7 +44,7 @@ export const usePokemonSearch = (clearDetails: () => void) => {
     data: allNames = [],
     error: namesError,
     isLoading: namesLoading,
-  } = useGetAllPokemonNamesQuery();
+  } = useGetAllPokemonNamesQuery(undefined);
 
   useEffect(() => {
     if (pageData) {
@@ -68,7 +71,11 @@ export const usePokemonSearch = (clearDetails: () => void) => {
       setResults([]);
       setCount(0);
       setSearchParams({ page: '1' });
-      refetchPage();
+
+      if (!searchTerm) {
+        refetchPage();
+      }
+
       return;
     }
 
@@ -92,10 +99,15 @@ export const usePokemonSearch = (clearDetails: () => void) => {
 
     try {
       const fullData = await Promise.all(
-        filteredNames.map((name) => fetchDetailedPokemonData(name))
+        filteredNames.map(async (name) => {
+          const result = await dispatch(
+            pokemonApi.endpoints.getPokemonDetails.initiate(name)
+          ).unwrap();
+          return result;
+        })
       );
       setResults(fullData);
-    } catch (error) {
+    } catch (error: unknown) {
       const msg = isError(error)
         ? 'Error loading Pokémon data'
         : 'Unknown error occurred';
@@ -108,11 +120,8 @@ export const usePokemonSearch = (clearDetails: () => void) => {
   };
 
   const handleReset = () => {
-    clearSearchTerm();
-    clearDetails();
-    setSearchParams({ page: '1' });
-    setErrorMessage(null);
-    refetchPage();
+    const params = new URLSearchParams();
+    setSearchParams(params);
   };
 
   const loading = pageLoading || namesLoading || searchLoading;

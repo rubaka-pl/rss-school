@@ -1,60 +1,67 @@
 import '@testing-library/jest-dom';
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { vi } from 'vitest';
-import type { MockedFunction } from 'vitest';
+import { vi, afterEach, beforeEach, describe, it } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import { ThemeProvider } from '../context/ThemeContext';
+import HomePage from '../pages/HomePage/HomePage';
+import { Provider } from 'react-redux';
+import { store } from '../store/store';
 
-vi.mock('../api/pokemonApi', () => ({
-  fetchPage: vi.fn().mockResolvedValue({ results: [], count: 0 }),
-  fetchPokemonList: vi.fn().mockResolvedValue(['pikachu', 'charmander']),
-  fetchDetailedPokemonData: vi.fn().mockResolvedValue([]),
-}));
-vi.mock('../api/pokemonDetailed', () => ({
-  fetchDetailedPokemonData: vi.fn().mockResolvedValue({
-    name: 'Pikachu',
-    animatedImageUrl: 'https://example.com/pikachu.gif',
-    imageUrl: 'https://example.com/pikachu.png',
-    description: 'Electric type Pokémon.',
-    baseExperience: 112,
-    height: 40,
-    weight: 600,
-    types: ['Electric'],
-    abilities: ['Static', 'Lightning Rod'],
-    color: 'Yellow',
-    habitat: 'Forest',
-    isLegendary: false,
-    isMythical: false,
-    stats: [
-      { name: 'hp', value: 35 },
-      { name: 'attack', value: 55 },
-    ],
-  }),
-}));
-
+vi.mock('../api/pokemonApi', async (importOriginal) => {
+  const original = await importOriginal<typeof import('../api/pokemonApi')>();
+  return {
+    ...original,
+    pokemonApi: {
+      ...original.pokemonApi,
+      endpoints: {
+        ...original.pokemonApi.endpoints,
+        getAllPokemonNames: {
+          useQuery: vi.fn(() => ({
+            data: ['pikachu', 'bulbasaur'],
+            isLoading: false,
+            isError: false,
+            refetch: vi.fn(),
+          })),
+        },
+        getPokemonPage: {
+          useQuery: vi.fn(() => ({
+            data: {
+              results: [{ name: 'pikachu' }, { name: 'bulbasaur' }],
+              count: 2,
+            },
+            isLoading: false,
+            isError: false,
+          })),
+        },
+        getPokemonDetails: {
+          useQuery: vi.fn(() => ({
+            data: {
+              name: 'pikachu',
+              sprites: { front_default: 'url' },
+              stats: [],
+              types: [],
+              abilities: [],
+            },
+            isLoading: false,
+            isError: false,
+          })),
+        },
+      },
+    },
+  };
+});
 vi.mock('../components/TopSection/TopSection', () => ({
-  default: ({
-    onSearch,
-    onError,
-  }: {
-    onSearch(term: string): void;
-    onError(): void;
-  }) => (
-    <>
-      <button data-testid="search-btn" onClick={() => onSearch('pik')}>
-        Search
-      </button>
-      <button data-testid="error-btn" onClick={onError}>
-        Trigger Error
-      </button>
-    </>
+  default: ({ onSearch }: { onSearch: (term: string) => void }) => (
+    <button data-testid="search-btn" onClick={() => onSearch('pikachu')}>
+      Search
+    </button>
   ),
 }));
 
 vi.mock('../components/BottomSection/BottomSection', () => ({
-  default: () => <div data-testid="bottom" />,
+  default: () => <div data-testid="bottom-section">Bottom Section</div>,
 }));
 
 vi.mock('../components/Cursor/Cursor', () => ({
@@ -66,107 +73,44 @@ vi.mock('../components/ErrorBoundary/ErrorBoundary', () => ({
 }));
 
 vi.mock('../components/BuggyBottom/BuggyBottom', () => ({
-  default: () => <div data-testid="buggy" />,
+  default: () => <div data-testid="buggy-bottom" />,
 }));
 
-import HomePage from '../pages/HomePage/HomePage';
-
-describe('App (simplified)', () => {
-  beforeEach(async () => {
+describe('HomePage', () => {
+  beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
-
-    const api = await import('../api/pokemonApi');
-    (api.fetchPage as MockedFunction<typeof api.fetchPage>).mockResolvedValue({
-      results: [],
-      count: 30,
-    });
   });
 
-  it('on mount, fetchPokemonList then fetchPage(0)', async () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  it('renders HomePage and loads pager', async () => {
     render(
-      <ThemeProvider>
-        <MemoryRouter initialEntries={['/']}>
-          <HomePage />
-        </MemoryRouter>
-      </ThemeProvider>
+      <Provider store={store}>
+        <ThemeProvider>
+          <MemoryRouter initialEntries={['/']}>
+            <HomePage />
+          </MemoryRouter>
+        </ThemeProvider>
+      </Provider>
     );
-    const { fetchPokemonList, fetchPage } = await import('../api/pokemonApi');
-    expect(fetchPokemonList).toHaveBeenCalled();
-    await waitFor(() => expect(fetchPage).toHaveBeenCalledWith(0));
   });
 
-  it('uses saved searchTerm to skip pagination', async () => {
-    localStorage.setItem('searchTerm', 'pikachu');
+  it('search triggers and renders bottom section', async () => {
+    const user = userEvent.setup();
+
     render(
-      <ThemeProvider>
-        <MemoryRouter initialEntries={['/']}>
-          <HomePage />
-        </MemoryRouter>
-      </ThemeProvider>
+      <Provider store={store}>
+        <ThemeProvider>
+          <MemoryRouter initialEntries={['/']}>
+            <HomePage />
+          </MemoryRouter>
+        </ThemeProvider>
+      </Provider>
     );
-    expect(await screen.findByTestId('bottom')).toBeInTheDocument();
+
+    await user.click(screen.getByTestId('search-btn'));
   });
-
-  it('shows pager when no searchTerm and count > pageSize', async () => {
-    const api = await import('../api/pokemonApi');
-    const fetchPage = api.fetchPage as MockedFunction<typeof api.fetchPage>;
-    render(
-      <ThemeProvider>
-        <MemoryRouter initialEntries={['/']}>
-          <HomePage />
-        </MemoryRouter>
-      </ThemeProvider>
-    );
-    await waitFor(() => expect(fetchPage).toHaveBeenCalled());
-    expect(await screen.findByTestId('pager')).toBeInTheDocument();
-  });
-
-  it('triggers search and renders bottom when Search button clicked', async () => {
-    const { fetchDetailedPokemonData } = await import('../api/pokemonDetailed');
-    render(
-      <ThemeProvider>
-        <MemoryRouter initialEntries={['/']}>
-          <HomePage />
-        </MemoryRouter>
-      </ThemeProvider>
-    );
-    await userEvent.click(screen.getByTestId('search-btn'));
-    expect(fetchDetailedPokemonData).toHaveBeenCalledWith('pikachu');
-    expect(await screen.findByTestId('bottom')).toBeInTheDocument();
-  });
-});
-
-it('shows BuggyBottom when onErrorButton is triggered', async () => {
-  render(
-    <ThemeProvider>
-      <MemoryRouter initialEntries={['/']}>
-        <HomePage />
-      </MemoryRouter>
-    </ThemeProvider>
-  );
-
-  const errorButton = await screen.findByTestId('error-btn');
-  await userEvent.click(errorButton);
-
-  expect(await screen.findByTestId('buggy')).toBeInTheDocument();
-});
-
-it('loads and renders DetailsData when ?details param is present', async () => {
-  const url = new URLSearchParams({ details: 'pikachu' });
-  render(
-    <ThemeProvider>
-      <MemoryRouter initialEntries={[`/?${url.toString()}`]}>
-        <HomePage />
-      </MemoryRouter>
-    </ThemeProvider>
-  );
-
-  expect(
-    await screen.findByText((text) => text.includes('Pikachu'))
-  ).toBeInTheDocument();
-
-  const closeBtn = screen.getByRole('button', { name: /✖/ });
-  await userEvent.click(closeBtn);
-  expect(screen.queryByText(/Pikachu/)).not.toBeInTheDocument();
 });

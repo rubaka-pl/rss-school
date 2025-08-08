@@ -1,13 +1,16 @@
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import AboutPage from '../pages/AboutPage/AboutPage';
-
+import { Provider } from 'react-redux';
+import { store } from '../store/store';
 describe('AboutPage', () => {
   it('renders project title and description', () => {
     render(
-      <MemoryRouter>
-        <AboutPage />
-      </MemoryRouter>
+      <Provider store={store}>
+        <MemoryRouter>
+          <AboutPage />
+        </MemoryRouter>
+      </Provider>
     );
 
     expect(

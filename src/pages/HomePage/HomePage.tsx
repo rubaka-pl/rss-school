@@ -1,3 +1,6 @@
+import { useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
+
 import ErrorBoundary from '../../components/ErrorBoundary/ErrorBoundary';
 import TopSection from '../../components/TopSection/TopSection';
 import BottomSection from '../../components/BottomSection/BottomSection';
@@ -10,13 +13,16 @@ import NotFoundPage from '../NotFoundPage/NotFoundPage';
 import { usePokemonSearch } from '../../hooks/usePokemonSearch';
 import { usePokemonDetails } from '../../hooks/usePokemonDetails';
 import { useValidateParams } from '../../hooks/useValidateParams';
-import { useState } from 'react';
 import { PAGE_SIZE } from '../../utilities/constants';
+import {
+  useGetPokemonDetailsQuery,
+  useGetPokemonPageQuery,
+  pokemonApi,
+} from '../../api/pokemonApi';
 
 const HomePage = () => {
   const isValid = useValidateParams(['page', 'details', 'search']);
-
-  const { detailsData, clearDetails } = usePokemonDetails();
+  const dispatch = useDispatch();
 
   const {
     searchTerm,
@@ -30,13 +36,57 @@ const HomePage = () => {
     totalPages,
     setSearchParams,
     searchParams,
-  } = usePokemonSearch(clearDetails);
+  } = usePokemonSearch();
+
+  const { refetch: refetchPokemon } = useGetPokemonDetailsQuery(
+    searchParams.get('details') || '',
+    { skip: !searchParams.get('details') }
+  );
+
+  const { refetch: refetchSearch } = useGetPokemonPageQuery(
+    Number(searchParams.get('page')) || 0
+  );
+
+  const { detailsData, clearDetails } = usePokemonDetails();
+
+  const handleClearDetails = () => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete('details');
+    setSearchParams(newParams);
+    clearDetails();
+  };
 
   const [showBuggyComponent, setShowBuggyComponent] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  if (!isValid) return <NotFoundPage />;
+  const handleRefresh = async () => {
+    console.log('[Refresh] Started. Params:', searchParams.toString());
+    setIsRefreshing(true);
+    try {
+      dispatch(pokemonApi.util.invalidateTags(['Pokemon']));
+      if (searchParams.get('details')) {
+        await refetchPokemon();
+        console.log('[Refresh] Refetched details');
+      }
+      await refetchSearch();
+      console.log('[Refresh] Refetched list');
+    } catch (error) {
+      console.error('Refresh failed:', error);
+    } finally {
+      setIsRefreshing(false);
+      console.log('[Refresh] Done');
+    }
+  };
 
   const handleError = () => setShowBuggyComponent(true);
+
+  useEffect(() => {
+    if (!searchParams.get('details') && detailsData !== null) {
+      clearDetails();
+    }
+  }, [searchParams.toString(), detailsData]);
+
+  if (!isValid) return <NotFoundPage />;
 
   return (
     <ErrorBoundary>
@@ -59,14 +109,18 @@ const HomePage = () => {
             <>
               <BottomSection
                 results={results}
-                onResetButton={handleReset}
                 onErrorButton={handleError}
+                onResetButton={handleReset}
                 searchParams={searchParams}
                 setSearchParams={setSearchParams}
+                onRefresh={handleRefresh}
+                isRefreshing={isRefreshing}
               />
-              {detailsData && (
-                <DetailsData data={detailsData} onClose={clearDetails} />
+
+              {searchParams.get('details') && detailsData && (
+                <DetailsData data={detailsData} onClose={handleClearDetails} />
               )}
+
               {!searchTerm && totalPages > 1 && (
                 <Pagination
                   offset={offset}

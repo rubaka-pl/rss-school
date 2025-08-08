@@ -1,39 +1,18 @@
-import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { fetchDetailedPokemonData } from '../api/pokemonDetailed';
-import type { DetailedResult } from '../types/pokemon';
+import { useGetPokemonDetailsQuery } from '../api/pokemonApi';
 
 export const usePokemonDetails = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const detailsName = searchParams.get('details');
-  const [detailsData, setDetailsData] = useState<DetailedResult | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    const load = async () => {
-      if (!detailsName) {
-        setDetailsData(null);
-        return;
-      }
-
-      try {
-        const data = await fetchDetailedPokemonData(detailsName);
-        if (!cancelled) setDetailsData(data);
-      } catch (error) {
-        if (!cancelled) {
-          console.error('Error loading details:', error);
-          setDetailsData(null);
-        }
-      }
-    };
-
-    load();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [detailsName]);
+  const {
+    data: detailsData,
+    isLoading,
+    isError,
+    refetch,
+  } = useGetPokemonDetailsQuery(detailsName ?? '', {
+    skip: !detailsName,
+  });
 
   const clearDetails = () => {
     const newParams = new URLSearchParams(searchParams);
@@ -41,5 +20,11 @@ export const usePokemonDetails = () => {
     setSearchParams(newParams, { replace: true });
   };
 
-  return { detailsData, clearDetails };
+  return {
+    detailsData,
+    isLoading,
+    isError,
+    refetch,
+    clearDetails,
+  };
 };

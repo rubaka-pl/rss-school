@@ -266,6 +266,26 @@ tbody tr td {
   flex-wrap: wrap;
 }
 
+.refreshButton {
+  background-color: #4caf50;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  margin: 0 8px;
+  transition: background-color 0.3s;
+}
+
+.refreshButton:hover {
+  background-color: #45a049;
+}
+
+.refreshButton:active {
+  background-color: #3e8e41;
+}
+
 @media (max-width: 480px) {
   .flyout {
     flex-direction: column;

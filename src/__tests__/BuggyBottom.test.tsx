@@ -8,6 +8,13 @@ describe('BuggyBottom', () => {
     expect(() => render(<BuggyBottom />)).toThrow(/Error from BuggyBottom/);
   });
 
+  beforeAll(() => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+  });
+  afterAll(() => {
+    vi.restoreAllMocks();
+  });
+
   it('renders fallback UI when wrapped in ErrorBoundary', () => {
     render(
       <ErrorBoundary>

@@ -44,6 +44,8 @@ export interface BottomSectionProps {
   onResetButton(): void;
   setSearchParams: SetURLSearchParams;
   searchParams: URLSearchParams;
+  onRefresh(): void;
+  isRefreshing: boolean;
 }
 
 export interface ErrorBoundaryState {
