@@ -24,6 +24,8 @@ const HomePage = () => {
   const isValid = useValidateParams(['page', 'details', 'search']);
   const dispatch = useDispatch();
 
+  const { detailsData, clearDetails } = usePokemonDetails();
+
   const {
     searchTerm,
     handleSearch,
@@ -36,7 +38,7 @@ const HomePage = () => {
     totalPages,
     setSearchParams,
     searchParams,
-  } = usePokemonSearch();
+  } = usePokemonSearch(clearDetails);
 
   const { refetch: refetchPokemon } = useGetPokemonDetailsQuery(
     searchParams.get('details') || '',
@@ -46,8 +48,6 @@ const HomePage = () => {
   const { refetch: refetchSearch } = useGetPokemonPageQuery(
     Number(searchParams.get('page')) || 0
   );
-
-  const { detailsData, clearDetails } = usePokemonDetails();
 
   const handleClearDetails = () => {
     const newParams = new URLSearchParams(searchParams);

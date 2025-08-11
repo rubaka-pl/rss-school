@@ -41,6 +41,8 @@ describe('BottomSection', () => {
         onErrorButton={onErrorButton}
         setSearchParams={mockSetSearchParams}
         searchParams={mockSearchParams}
+        onRefresh={vi.fn()}
+        isRefreshing={false}
       />
     );
 
@@ -71,6 +73,8 @@ describe('BottomSection', () => {
         onErrorButton={onErrorButton}
         setSearchParams={mockSetSearchParams}
         searchParams={mockSearchParams}
+        onRefresh={vi.fn()}
+        isRefreshing={false}
       />
     );
 
@@ -99,6 +103,8 @@ describe('BottomSection', () => {
         onErrorButton={onErrorButton}
         setSearchParams={mockSetSearchParams}
         searchParams={mockSearchParams}
+        onRefresh={vi.fn()}
+        isRefreshing={false}
       />
     );
 
