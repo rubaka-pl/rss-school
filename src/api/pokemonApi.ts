@@ -1,109 +1,191 @@
-import type { Result } from '../types/app';
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import type {
+  PokemonListResponse,
+  PokemonData,
+  SpeciesData,
+  DetailedResult,
+} from '../types/pokemon';
 import { PAGE_SIZE } from '../utilities/constants';
 import { normalizeFlavorText } from '../utilities/stringUtils';
 
-interface PokemonListResponse {
-  count: number;
-  results: Array<{ name: string; url: string }>;
-}
+export const pokemonApi = createApi({
+  reducerPath: 'pokemonApi',
+  baseQuery: fetchBaseQuery({ baseUrl: 'https://pokeapi.co/api/v2/' }),
+  tagTypes: ['Pokemon'],
+  endpoints: (builder) => ({
+    getAllPokemonNames: builder.query<string[], undefined>({
+      query: () => 'pokemon?limit=100000',
+      transformResponse: (response: PokemonListResponse) =>
+        response.results.map((r) => r.name),
+    }),
 
-interface PokemonData {
-  sprites: { front_default: string | null };
-  height: number;
-  weight: number;
-  types: Array<{ type: { name: string } }>;
-  abilities: Array<{ ability: { name: string } }>;
-  species: { url: string };
-}
+    getPokemonPage: builder.query<
+      { results: DetailedResult[]; count: number },
+      number
+    >({
+      async queryFn(offset) {
+        try {
+          const listRes = await fetch(
+            `https://pokeapi.co/api/v2/pokemon?limit=${PAGE_SIZE}&offset=${offset}`
+          );
 
-interface FlavorTextEntry {
-  flavor_text: string;
-  language: { name: string };
-}
+          if (!listRes.ok) {
+            return {
+              error: {
+                status: listRes.status,
+                data: `Failed to fetch list: ${listRes.statusText}`,
+              },
+            };
+          }
 
-interface SpeciesData {
-  flavor_text_entries: FlavorTextEntry[];
-}
+          const listData: PokemonListResponse = await listRes.json();
 
-export async function fetchPokemonList(): Promise<string[]> {
-  const res = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=100000`);
-  if (!res.ok) throw new Error(`Failed to fetch pokemon list: ${res.status}`);
-  const json = (await res.json()) as PokemonListResponse;
-  return json.results.map((r) => r.name);
-}
+          const detailedResults = (
+            await Promise.all(
+              listData.results.map(async (pokemon) => {
+                try {
+                  const pokemonRes = await fetch(
+                    `https://pokeapi.co/api/v2/pokemon/${pokemon.name}`
+                  );
+                  if (!pokemonRes.ok) {
+                    console.error(`Failed to fetch ${pokemon.name}`);
+                    return null;
+                  }
+                  const data: PokemonData = await pokemonRes.json();
 
-export async function fetchPage(
-  offset: number
-): Promise<{ results: Result[]; count: number }> {
-  const res = await fetch(
-    `https://pokeapi.co/api/v2/pokemon?limit=${PAGE_SIZE}&offset=${offset}`
-  );
-  if (!res.ok) throw new Error(`Failed to fetch page: ${res.status}`);
+                  const speciesRes = await fetch(data.species.url);
+                  if (!speciesRes.ok) {
+                    console.error(
+                      `Failed to fetch species for ${pokemon.name}`
+                    );
+                    return null;
+                  }
+                  const speciesData: SpeciesData = await speciesRes.json();
 
-  const json = (await res.json()) as PokemonListResponse;
-  const fullData = await Promise.all(
-    json.results.map((p) => fetchFullPokemonData(p.name, p.url))
-  );
+                  const flavor = speciesData.flavor_text_entries.find(
+                    (entry) => entry.language.name === 'en'
+                  );
 
-  return {
-    results: fullData,
-    count: json.count,
-  };
-}
+                  return {
+                    name: pokemon.name,
+                    description: flavor
+                      ? normalizeFlavorText(flavor.flavor_text)
+                      : 'No description',
+                    imageUrl: data.sprites.front_default ?? '',
+                    animatedImageUrl:
+                      data.sprites.versions?.['generation-v']?.['black-white']
+                        ?.animated?.front_default ?? null,
+                    height: data.height,
+                    weight: data.weight,
+                    types: data.types.map((t) => t.type.name),
+                    abilities: data.abilities.map((a) => a.ability.name),
+                    baseExperience: data.base_experience,
+                    stats: data.stats.map((s) => ({
+                      name: s.stat.name,
+                      value: s.base_stat,
+                    })),
+                    color: speciesData.color.name,
+                    habitat: speciesData.habitat?.name ?? null,
+                    isLegendary: speciesData.is_legendary,
+                    isMythical: speciesData.is_mythical,
+                  } as DetailedResult;
+                } catch (err) {
+                  console.error(`Unexpected error for ${pokemon.name}`, err);
+                  return null;
+                }
+              })
+            )
+          ).filter((p): p is DetailedResult => p !== null);
 
-export async function fetchFullPokemonData(
-  name: string,
-  url: string
-): Promise<Result> {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Failed to fetch ${name}: ${res.status}`);
-  const data = (await res.json()) as PokemonData;
+          return {
+            data: {
+              results: detailedResults,
+              count: listData.count,
+            },
+          };
+        } catch (err) {
+          return {
+            error: {
+              status: 500,
+              data: err instanceof Error ? err.message : 'Unknown error',
+            },
+          };
+        }
+      },
+    }),
 
-  const speciesRes = await fetch(data.species.url);
-  if (!speciesRes.ok) throw new Error(`Failed to fetch species for ${name}`);
-  const speciesData = (await speciesRes.json()) as SpeciesData;
+    getPokemonDetails: builder.query<DetailedResult, string>({
+      async queryFn(name) {
+        try {
+          const pokemonRes = await fetch(
+            `https://pokeapi.co/api/v2/pokemon/${name}`
+          );
+          if (!pokemonRes.ok) {
+            return {
+              error: {
+                status: pokemonRes.status,
+                data: `Failed to fetch ${name}: ${pokemonRes.statusText}`,
+              },
+            };
+          }
+          const data: PokemonData = await pokemonRes.json();
 
-  const flavor = speciesData.flavor_text_entries.find(
-    (e) => e.language.name === 'en'
-  );
+          const speciesRes = await fetch(data.species.url);
+          if (!speciesRes.ok) {
+            return {
+              error: {
+                status: speciesRes.status,
+                data: `Failed to fetch species for ${name}: ${speciesRes.statusText}`,
+              },
+            };
+          }
+          const speciesData: SpeciesData = await speciesRes.json();
 
-  return {
-    name,
-    description: flavor
-      ? normalizeFlavorText(flavor.flavor_text)
-      : 'No description',
-    imageUrl: data.sprites.front_default ?? '',
-    height: data.height,
-    weight: data.weight,
-    types: data.types.map((t) => t.type.name),
-    abilities: data.abilities.map((a) => a.ability.name),
-  };
-}
+          const flavor = speciesData.flavor_text_entries.find(
+            (entry) => entry.language.name === 'en'
+          );
 
-export async function fetchFullPokemonDataByName(
-  name: string
-): Promise<Result> {
-  const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
-  if (!res.ok) throw new Error(`Failed to fetch ${name}: ${res.status}`);
-  const data = (await res.json()) as PokemonData;
+          const detailed: DetailedResult = {
+            name,
+            description: flavor
+              ? normalizeFlavorText(flavor.flavor_text)
+              : 'No description',
+            imageUrl: data.sprites.front_default ?? '',
+            animatedImageUrl:
+              data.sprites.versions?.['generation-v']?.['black-white']?.animated
+                ?.front_default ?? null,
+            height: data.height,
+            weight: data.weight,
+            types: data.types.map((t) => t.type.name),
+            abilities: data.abilities.map((a) => a.ability.name),
+            baseExperience: data.base_experience,
+            stats: data.stats.map((s) => ({
+              name: s.stat.name,
+              value: s.base_stat,
+            })),
+            color: speciesData.color.name,
+            habitat: speciesData.habitat?.name ?? null,
+            isLegendary: speciesData.is_legendary,
+            isMythical: speciesData.is_mythical,
+          };
 
-  const speciesRes = await fetch(data.species.url);
-  if (!speciesRes.ok) throw new Error(`Failed to fetch species for ${name}`);
-  const speciesData = (await speciesRes.json()) as SpeciesData;
+          return { data: detailed };
+        } catch (err) {
+          return {
+            error: {
+              status: 500,
+              data: err instanceof Error ? err.message : 'Unknown error',
+            },
+          };
+        }
+      },
+      providesTags: (_result, _error, name) => [{ type: 'Pokemon', id: name }],
+    }),
+  }),
+});
 
-  const flavor = speciesData.flavor_text_entries.find(
-    (e) => e.language.name === 'en'
-  );
-
-  return {
-    name,
-    description: flavor
-      ? normalizeFlavorText(flavor.flavor_text)
-      : 'No description',
-    imageUrl: data.sprites.front_default ?? '',
-    height: data.height,
-    weight: data.weight,
-    types: data.types.map((t) => t.type.name),
-    abilities: data.abilities.map((a) => a.ability.name),
-  };
-}
+export const {
+  useGetPokemonPageQuery,
+  useGetAllPokemonNamesQuery,
+  useGetPokemonDetailsQuery,
+} = pokemonApi;

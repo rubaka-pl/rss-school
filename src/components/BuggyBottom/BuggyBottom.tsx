@@ -1,7 +1,7 @@
-import React from 'react';
+import { useEffect } from 'react';
 
-export default class BuggyBottom extends React.Component {
-  componentDidMount() {
+const BuggyBottom = () => {
+  useEffect(() => {
     throw new Error(
       JSON.stringify(
         {
@@ -12,9 +12,9 @@ export default class BuggyBottom extends React.Component {
         2
       )
     );
-  }
+  }, []);
 
-  render() {
-    return <div>Buggy Bottom Loaded</div>;
-  }
-}
+  return <div>Buggy Bottom Loaded</div>;
+};
+
+export default BuggyBottom;

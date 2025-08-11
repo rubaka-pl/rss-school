@@ -1,15 +1,39 @@
-/* GLOBAL START */
+[data-theme='light'] {
+  --bg-color: #fdfdfd;
+  --text-color: #1e1e1e;
+  --bg-color-table: #ffffff;
+  --bg-color-table-th: #f0f0f0;
+  --bg-color-gray: #e6e6e6;
+  --button-color-search: #3b83f6bd;
+  --text-color-pokemonName: #001a44bd;
+  --text-color-desc: #000 !important;
+  --bg-color-input: rgba(255, 0, 0, 0.4) !important
+
+;
+}
+[data-theme='dark'] {
+  --bg-color: #242424 !important;
+  --text-color: #f5f5f5 !important;
+  --bg-color-table: #1e1e1e !important;
+  --bg-color-table-th: #2a2a2a !important;
+  --bg-color-gray: #121212 !important;
+  --button-color-search: #4e4e4e !important;
+  --text-color-pokemonName: #aaffaa !important;
+  --text-color-desc: #ccc !important;
+  --bg-color-input: rgba(255, 255, 255, 0.1) !important
+;
+}
 
 #root {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 1rem;
   text-align: center;
 }
 
 body {
   cursor:
-    url('/cursor.cur') 16 16,
+    url('/cursor.cur') 12 12,
     auto;
   font-family: 'Press Start 2P', monospace;
 }
@@ -28,6 +52,8 @@ ul {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-color);
+  color: var(--text-color);
 }
 
 a {
@@ -39,21 +65,12 @@ a:hover {
   color: #535bf2;
 }
 
-a,
-button,
-input[type='submit'],
-input[type='button'],
-.cursor-pointer {
-  cursor:
-    url('/pokeball-pointer.png') 16 16,
-    pointer;
-}
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  background-color: var(--bg-color);
+  color: var(--text-color);
 }
 
 h1 {
@@ -68,7 +85,7 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: var(--button-color-search);
   cursor: pointer;
   transition: border-color 0.25s;
 }

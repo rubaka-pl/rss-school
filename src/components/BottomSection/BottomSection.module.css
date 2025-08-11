@@ -1,8 +1,60 @@
+.fancyCheckbox {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  gap: 0.5rem;
+  margin-top: 0.8rem;
+  font-size: 1rem;
+  color: var(--text-color);
+  user-select: none;
+  position: relative;
+}
+
+.fancyCheckbox input[type='checkbox'] {
+  opacity: 0;
+  position: absolute;
+  left: -9999px;
+}
+
+.checkboxCustom {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--text-color);
+  border-radius: 4px;
+  display: inline-block;
+  position: relative;
+  transition:
+    background 0.3s,
+    border-color 0.3s;
+}
+
+.fancyCheckbox input[type='checkbox']:checked + .checkboxCustom {
+  background-color: var(--text-color);
+  border-color: var(--text-color);
+}
+
+.fancyCheckbox input[type='checkbox']:checked + .checkboxCustom::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 6px;
+  width: 4px;
+  height: 8px;
+  border: solid var(--bg-color);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  transition: all 0.3s ease;
+}
+
 .pokemonBox {
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 0.5rem;
+}
+.tableWrapper {
+  overflow-x: auto;
+  width: 100%;
 }
 
 .pokemonImage {
@@ -13,7 +65,7 @@
 
 .pokemonName {
   font-weight: bold;
-  color: #aaffaa;
+  color: var(--text-color-pokemonName);
   margin-top: 0.5rem;
   text-align: center;
   font-size: 1.4rem;
@@ -29,8 +81,8 @@ strong {
   flex-direction: column;
   align-items: center;
   padding: 30px 20px;
-  background: #121212;
-  color: #f2f2f2;
+  background: var(--bg-color);
+  color: var(--text-color);
 }
 
 .empty {
@@ -49,7 +101,7 @@ strong {
   width: 100%;
   border-collapse: collapse;
   margin: 20px 0;
-  background-color: #1e1e1e;
+  background-color: var(--bg-color-table);
 }
 
 .table th,
@@ -58,15 +110,14 @@ strong {
   border: 1px solid #333;
   vertical-align: middle;
   text-align: center;
+  height: 100%;
 }
 
 .table th {
-  background-color: #2a2a2a;
-  color: #fff;
+  background-color: var(--bg-color-table-th);
 }
 
 .nameCell {
-  display: flex;
   align-items: center;
   gap: 12px;
   font-weight: bold;
@@ -80,7 +131,7 @@ strong {
 }
 
 .detailsCell {
-  color: #ccc;
+  color: var(--text-color-desc);
 }
 
 .stats {
@@ -133,4 +184,122 @@ strong {
 tbody tr td {
   height: 250px;
   text-align: center;
+}
+
+.navButton {
+  padding: 10px 20px;
+  background-color: #b30000;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.3s ease;
+  color: white;
+}
+.navButton:hover {
+  background-color: #990000;
+}
+
+.detailsLink,
+.flyoutButton {
+  margin-top: 10px;
+  padding: 12px 20px;
+  background: linear-gradient(
+    135deg,
+    #ff0000 40%,
+    #ffffff 40%,
+    #ffffff 60%,
+    #ff0000 60%
+  );
+  background-size: 200% 100%;
+  background-position: left bottom;
+  border: 2px solid #000;
+  border-radius: 999px;
+  padding: 0.5rem 1rem;
+  font-weight: bold;
+  color: #000;
+  text-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  transition:
+    background-position 0.3s,
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+.detailsLink:hover,
+.flyoutButton:hover {
+  background-position: right bottom;
+  transform: scale(1.05);
+  box-shadow:
+    0 0 10px rgba(255, 255, 255, 0.8),
+    0 0 20px rgba(255, 0, 0, 0.6);
+}
+.detailsLink::before,
+.flyoutButton::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 200%;
+  height: 200%;
+  background: rgba(255, 255, 255, 0.2);
+  transform: translate(-50%, -50%) scale(0);
+  border-radius: 50%;
+  transition: transform 0.5s ease;
+  z-index: 0;
+}
+
+.flyout {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  background-color: var(--bg-color-gray);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  position: sticky;
+  bottom: 20px;
+  z-index: 999;
+  margin-top: 2rem;
+  max-width: 100%;
+  flex-wrap: wrap;
+}
+
+.refreshButton {
+  background-color: #4caf50;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  margin: 0 8px;
+  transition: background-color 0.3s;
+}
+
+.refreshButton:hover {
+  background-color: #45a049;
+}
+
+.refreshButton:active {
+  background-color: #3e8e41;
+}
+
+@media (max-width: 480px) {
+  .flyout {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .flyout button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .table th,
+  .table td {
+    padding: 2px;
+  }
 }
