@@ -64,20 +64,18 @@ export const usePokemonSearch = (clearDetails: () => void) => {
   const handleSearch = async (term: string) => {
     clearDetails();
     const query = normalizeSearchTerm(term);
-    setSearchTerm(query);
     setErrorMessage(null);
 
     if (!query) {
+      setSearchTerm('');
       setResults([]);
       setCount(0);
       setSearchParams({ page: '1' });
-
-      if (!searchTerm) {
-        refetchPage();
-      }
-
+      refetchPage();
       return;
     }
+
+    setSearchTerm(query);
 
     if (!allNames.length) {
       setErrorMessage('Pokémon list is not loaded yet');
